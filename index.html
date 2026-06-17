@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Taikoform · Maringá PR</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#09090F;min-height:100vh;}
+    #root{min-height:100vh;}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── THEMES ────────────────────────────────────────────────────
+const THEMES = [
+  {id:"aurora",  name:"Aurora",      a:"#C084FC",b:"#818CF8",bg:"#09090F",surface:"#13131F",card:"#191928",text:"#EDE9F8",sub:"#8880A8"},
+  {id:"ocean",   name:"Oceano",      a:"#38BDF8",b:"#0EA5E9",bg:"#060D14",surface:"#0D1A24",card:"#111E2E",text:"#E0F4FF",sub:"#5F8FAA"},
+  {id:"ember",   name:"Brasa",       a:"#FB923C",b:"#F97316",bg:"#0F0800",surface:"#1C1005",card:"#221508",text:"#FFF0E0",sub:"#AA7040"},
+  {id:"rose",    name:"Rosa",        a:"#F472B6",b:"#EC4899",bg:"#0F060C",surface:"#1E0D17",card:"#250F1E",text:"#FFE8F5",sub:"#AA5080"},
+  {id:"lime",    name:"Lima",        a:"#A3E635",b:"#84CC16",bg:"#060F00",surface:"#0D1C05",card:"#111F07",text:"#F0FFD0",sub:"#6A9030"},
+  {id:"gold",    name:"Ouro",        a:"#FCD34D",b:"#F59E0B",bg:"#0F0B00",surface:"#1C1500",card:"#231A00",text:"#FFF8DC",sub:"#AA8830"},
+  {id:"teal",    name:"Petróleo",    a:"#2DD4BF",b:"#14B8A6",bg:"#050F0E",surface:"#0A1C1A",card:"#0F2220",text:"#D0FFF8",sub:"#409080"},
+  {id:"violet",  name:"Violeta",     a:"#A78BFA",b:"#7C3AED",bg:"#08050F",surface:"#120A1E",card:"#160D25",text:"#EDE8FF",sub:"#7050AA"},
+  {id:"cyber",   name:"Cyber",       a:"#00FFF0",b:"#00BFFF",bg:"#000510",surface:"#000D1F",card:"#001028",text:"#E0FFFF",sub:"#008090"},
+  {id:"neon",    name:"Neon",        a:"#F0ABFC",b:"#34D399",bg:"#020208",surface:"#080818",card:"#0C0C20",text:"#FAFFFE",sub:"#708090"},
+  {id:"crimson", name:"Carmim",      a:"#F87171",b:"#EF4444",bg:"#0F0505",surface:"#1C0A0A",card:"#220D0D",text:"#FFE8E8",sub:"#AA5050"},
+  {id:"sakura",  name:"Sakura",      a:"#FBCFE8",b:"#F9A8D4",bg:"#0F0508",surface:"#1E0D17",card:"#250F1E",text:"#FFF0F8",sub:"#A06080"},
+  {id:"forest",  name:"Floresta",    a:"#6EE7B7",b:"#34D399",bg:"#040F09",surface:"#091C11",card:"#0D2215",text:"#E0FFF2",sub:"#40A070"},
+  {id:"mono",    name:"Prata",       a:"#E2E8F0",b:"#94A3B8",bg:"#060608",surface:"#111118",card:"#16161E",text:"#F1F5F9",sub:"#64748B"},
+  {id:"blwh",    name:"Azul/Branco", a:"#60A5FA",b:"#BAE6FD",bg:"#010810",surface:"#0A1428",card:"#0F1A30",text:"#EFF6FF",sub:"#4080B0"},
+];
+
+const FONTS = [
+  {id:"system",   name:"Moderna",    style:"system-ui,'Segoe UI',sans-serif",    p:"Aa Bb 123"},
+  {id:"inter",    name:"Interface",  style:"'Trebuchet MS',Helvetica,sans-serif", p:"Aa Bb 123"},
+  {id:"mono",     name:"Terminal",   style:"'Courier New',Courier,monospace",     p:"Aa Bb 123"},
+  {id:"georgia",  name:"Elegante",   style:"Georgia,'Times New Roman',serif",     p:"Aa Bb 123"},
+  {id:"impact",   name:"Impacto",    style:"Impact,'Arial Black',sans-serif",     p:"AA BB 123"},
+  {id:"comic",    name:"Descolada",  style:"'Comic Sans MS','Chalkboard SE',cursive",p:"Aa Bb 123"},
+  {id:"verdana",  name:"Legível",    style:"Verdana,Geneva,sans-serif",           p:"Aa Bb 123"},
+  {id:"palatino", name:"Literária",  style:"Palatino,'Palatino Linotype',serif",  p:"Aa Bb 123"},
+  {id:"tahoma",   name:"Clean",      style:"Tahoma,Geneva,sans-serif",            p:"Aa Bb 123"},
+  {id:"narrow",   name:"Compacta",   style:"'Arial Narrow',sans-serif",           p:"Aa Bb 123"},
+];
+
+const AVATARS = [
+  {id:"a1", e:"🦊",bg:"linear-gradient(135deg,#FB923C,#F59E0B)",l:"Raposa"},
+  {id:"a2", e:"🐺",bg:"linear-gradient(135deg,#818CF8,#7C3AED)",l:"Lobo"},
+  {id:"a3", e:"🐱",bg:"linear-gradient(135deg,#F472B6,#EC4899)",l:"Gato"},
+  {id:"a4", e:"🦁",bg:"linear-gradient(135deg,#FCD34D,#F59E0B)",l:"Leão"},
+  {id:"a5", e:"🐸",bg:"linear-gradient(135deg,#A3E635,#84CC16)",l:"Sapo"},
+  {id:"a6", e:"🐼",bg:"linear-gradient(135deg,#E2E8F0,#94A3B8)",l:"Panda"},
+  {id:"a7", e:"🦋",bg:"linear-gradient(135deg,#C084FC,#818CF8)",l:"Borboleta"},
+  {id:"a8", e:"🐉",bg:"linear-gradient(135deg,#2DD4BF,#0EA5E9)",l:"Dragão"},
+  {id:"a9", e:"🦅",bg:"linear-gradient(135deg,#38BDF8,#6366F1)",l:"Águia"},
+  {id:"a10",e:"🐙",bg:"linear-gradient(135deg,#F87171,#C084FC)",l:"Polvo"},
+  {id:"a11",e:"🦈",bg:"linear-gradient(135deg,#60A5FA,#1D4ED8)",l:"Tubarão"},
+  {id:"a12",e:"🌙",bg:"linear-gradient(135deg,#818CF8,#38BDF8)",l:"Lua"},
+  {id:"a13",e:"⚡",bg:"linear-gradient(135deg,#FCD34D,#FB923C)",l:"Raio"},
+  {id:"a14",e:"🔥",bg:"linear-gradient(135deg,#F87171,#F59E0B)",l:"Fogo"},
+  {id:"a15",e:"🌊",bg:"linear-gradient(135deg,#38BDF8,#2DD4BF)",l:"Onda"},
+  {id:"a16",e:"🌟",bg:"linear-gradient(135deg,#FDE68A,#C084FC)",l:"Estrela"},
+  {id:"a17",e:"🎭",bg:"linear-gradient(135deg,#F472B6,#FB923C)",l:"Máscara"},
+  {id:"a18",e:"🎮",bg:"linear-gradient(135deg,#6366F1,#2DD4BF)",l:"Game"},
+  {id:"a19",e:"🌸",bg:"linear-gradient(135deg,#FBCFE8,#F9A8D4)",l:"Sakura"},
+  {id:"a20",e:"🦄",bg:"linear-gradient(135deg,#C084FC,#F472B6)",l:"Unicórnio"},
+  {id:"a21",e:"🐻",bg:"linear-gradient(135deg,#A3E635,#22D3EE)",l:"Urso"},
+  {id:"a22",e:"🐯",bg:"linear-gradient(135deg,#FCD34D,#EF4444)",l:"Tigre"},
+  {id:"a23",e:"🐬",bg:"linear-gradient(135deg,#38BDF8,#818CF8)",l:"Golfinho"},
+  {id:"a24",e:"☄️",bg:"linear-gradient(135deg,#F87171,#818CF8)",l:"Cometa"},
+  {id:"a25",e:"🦦",bg:"linear-gradient(135deg,#FCD34D,#84CC16)",l:"Lontra"},
+  {id:"a26",e:"🐧",bg:"linear-gradient(135deg,#94A3B8,#1E293B)",l:"Pinguim"},
+  {id:"a27",e:"🌺",bg:"linear-gradient(135deg,#F87171,#FBCFE8)",l:"Hibisco"},
+  {id:"a28",e:"🦚",bg:"linear-gradient(135deg,#4ADE80,#38BDF8)",l:"Pavão"},
+  {id:"a29",e:"🐺",bg:"linear-gradient(135deg,#E879F9,#818CF8)",l:"Lobo Emo"},
+  {id:"a30",e:"💀",bg:"linear-gradient(135deg,#374151,#111827)",l:"Caveira"},
+  {id:"a31",e:"🦝",bg:"linear-gradient(135deg,#94A3B8,#475569)",l:"Guaxinim"},
+  {id:"a32",e:"🌵",bg:"linear-gradient(135deg,#4ADE80,#A3E635)",l:"Cacto"},
+  {id:"a33",e:"🎃",bg:"linear-gradient(135deg,#FB923C,#7C3AED)",l:"Abóbora"},
+  {id:"a34",e:"🌈",bg:"linear-gradient(135deg,#F87171,#818CF8)",l:"Arco-Íris"},
+  {id:"a35",e:"🤖",bg:"linear-gradient(135deg,#94A3B8,#38BDF8)",l:"Robô"},
+  {id:"a36",e:"👾",bg:"linear-gradient(135deg,#A78BFA,#34D399)",l:"Alien"},
+  {id:"a37",e:"🐉",bg:"linear-gradient(135deg,#EF4444,#7C3AED)",l:"Dragão Fogo"},
+  {id:"a38",e:"⭐",bg:"linear-gradient(135deg,#FDE68A,#F59E0B)",l:"Astro"},
+  {id:"a39",e:"🦊",bg:"linear-gradient(135deg,#FB7185,#F43F5E)",l:"Raposa Rosa"},
+  {id:"a40",e:"🌙",bg:"linear-gradient(135deg,#6366F1,#A855F7)",l:"Lua Élfica"},
+];
+
+const SCHOOLS = {
+  "Rede Estadual":["CEEP Archimedes Rotili","Col. Est. Adaile Maria Leite","Col. Est. Alberto Jackson Byington Jr.","Col. Est. Alfredo Moisés Maluf","Col. de Aplicação Pedagógica — UEM","Col. Est. Antônio Garcia","Col. Est. Ângelo Trevisan","Col. Est. Bento Mossurunga","Col. Est. Branca da Mota Fernandes","Col. Est. Brasílio Itiberê","Col. Est. Caetano Munhoz da Rocha","Col. Est. Dirce de A. Maia","Col. Est. Duque de Caxias","Col. Est. Dr. Gastão Vidigal","Col. Est. Floriano","Col. Est. Heitor Alencar Furtado","Col. Est. Jardim Alvorada","Col. Est. João de Faria Pioli","Col. Est. João XXIII","Col. Est. José Geraldo Braga","Col. Est. Juscelino Kubitscheck de Oliveira","Col. Est. Júlio Teodorico","Col. Est. Luciano Mendes de Almeida","Col. Est. Marco Antônio Pimenta","Col. Est. Maringá","Col. Est. Nilza de Oliveira Pipino","Col. Est. do Parque Itaipú","Col. da Polícia Militar do PR — Maringá","Col. Est. Paulo Freire","Col. Est. Pedro Viriato Parigot de Souza","Col. Est. Pindorama","Col. Est. Presidente Kennedy","Col. Est. Rodrigues Alves","Col. Est. Rui Barbosa","Col. Est. Santa Maria Goretti","Col. Est. Santos Dumont","Col. Est. Sílvio Magalhães Barros","Col. Est. Silvia Regina Moreira","Col. Est. Tancredo de Almeida Neves","Col. Est. Tânia Varella Ferreira","Col. Est. Theobaldo M. Santos","Col. Est. Tiradentes","Col. Est. Tomaz E. de A. Vieira","Col. Est. Vinícius de Moraes","Col. Est. Vital Brasil","CEEBJA Prof. Manoel Rodrigues Silva","IEEM — Instituto de Educação Estadual de Maringá"],
+  "Rede Municipal":["Escola Mun. Ayrton Plaisant","Escola Mun. Benedita Natália Lima","Escola Mun. Campos Salles","Escola Mun. Célestin Freinet","Escola Mun. Lídia Ribeiro Dutra da Silva","Escola Mun. Mirian Leila Palandri","Escola Mun. Osvaldo Cruz","Escola Mun. Paulo Freire"],
+  "Rede Particular":["Alfa Rede de Ensino Maringá","Col. Adventista de Maringá","Col. Anglo Maringá","Col. Axia Maringá","Col. Bom Jesus Maringá","Col. Carlos Démia","Col. CCIM","Col. Dom Bosco Maringá","Col. Dôminos Maringá","Col. Eficaz Maringá","Col. Eleve Maringá","Col. Geração Cima","Col. Interação Maringá","Col. Integral Maringá","Col. Marista Maringá","Col. Mater Dei Maringá","Col. Modelo Maringá","Col. Nobel Maringá","Col. Notre Dame","Col. Objetivo Maringá","Col. Paraná Maringá","Col. Platão Maringá","Col. Premere Maringá","Col. Regina Mundi","Col. Santa Cruz","Col. Santo Inácio","Col. São Francisco Xavier","Col. SESI Maringá","Saint Helena Bilingual School","UTFPR — Câmpus Maringá"],
+};
+
+const CLUB_GROUPS = [
+  {g:"⚽ Futebol & Futsal",c:[{id:1,i:"⚽",n:"Futebol"},{id:2,i:"⛸️",n:"Futsal"},{id:3,i:"🥅",n:"Goleiro"},{id:4,i:"🏆",n:"Torneios"},{id:5,i:"🦵",n:"Fut. Areia"}]},
+  {g:"🏀 Esportes de Quadra",c:[{id:6,i:"🏀",n:"Basquete"},{id:7,i:"🏐",n:"Vôlei"},{id:8,i:"🏸",n:"Badminton"},{id:9,i:"🏓",n:"Tênis de Mesa"},{id:10,i:"🎾",n:"Tênis"},{id:11,i:"🤾",n:"Handebol"}]},
+  {g:"🥋 Artes Marciais",c:[{id:12,i:"🥋",n:"Judô"},{id:13,i:"🥊",n:"Boxe"},{id:14,i:"🤼",n:"Jiu-Jitsu BR"},{id:15,i:"🥋",n:"Jiu-Jitsu JP"},{id:16,i:"🦶",n:"Capoeira"},{id:17,i:"🥷",n:"Karatê Shotokan"},{id:18,i:"🥋",n:"Taekwondo"},{id:19,i:"💪",n:"Muay Thai"},{id:20,i:"🥋",n:"Kung Fu"},{id:21,i:"🤺",n:"Esgrima"}]},
+  {g:"🏊 Aquáticos & Radicais",c:[{id:22,i:"🏊",n:"Natação"},{id:23,i:"🏄",n:"Surf"},{id:24,i:"🛹",n:"Skate"},{id:25,i:"🛼",n:"Patins"},{id:26,i:"🧗",n:"Escalada"},{id:27,i:"🚵",n:"Mountain Bike"}]},
+  {g:"🎮 Games — Tiro & Ação",c:[{id:28,i:"🎯",n:"Free Fire"},{id:29,i:"💣",n:"Call of Duty"},{id:30,i:"🔫",n:"CS2/CS:GO"},{id:31,i:"🪂",n:"Fortnite"},{id:32,i:"🎮",n:"Valorant"},{id:33,i:"🔫",n:"Apex Legends"},{id:34,i:"🕹️",n:"PUBG"},{id:35,i:"🔥",n:"Overwatch 2"}]},
+  {g:"⚔️ Games — MOBA & Estratégia",c:[{id:36,i:"⚔️",n:"League of Legends"},{id:37,i:"🗡️",n:"DOTA 2"},{id:38,i:"📱",n:"Mobile Legends"},{id:39,i:"♟️",n:"Xadrez Online"},{id:40,i:"🎲",n:"Clash Royale"},{id:41,i:"⚔️",n:"Clash of Clans"},{id:42,i:"🏰",n:"Age of Empires"}]},
+  {g:"🌍 Games — Mundo Aberto & RPG",c:[{id:43,i:"⛏️",n:"Minecraft"},{id:44,i:"🌿",n:"Roblox"},{id:45,i:"🗺️",n:"Elden Ring"},{id:46,i:"🧙",n:"RPG Geral"},{id:47,i:"⚡",n:"Pokémon"},{id:48,i:"🌙",n:"Genshin Impact"},{id:49,i:"🌲",n:"Stardew Valley"}]},
+  {g:"📱 Games — Mobile",c:[{id:50,i:"🐔",n:"Stumble Guys"},{id:51,i:"💎",n:"Brawl Stars"},{id:52,i:"⚽",n:"FIFA Mobile"},{id:53,i:"🏰",n:"Clash Mini"},{id:54,i:"🔫",n:"PUBG Mobile"},{id:55,i:"🌍",n:"Rise of Kingdoms"}]},
+  {g:"🎵 Música — Estilos",c:[{id:56,i:"🎵",n:"K-pop"},{id:57,i:"🎸",n:"Rock Clássico"},{id:58,i:"🎸",n:"Heavy Metal"},{id:59,i:"🎤",n:"Funk Carioca"},{id:60,i:"🎤",n:"Trap & Rap"},{id:61,i:"🎹",n:"Música Clássica"},{id:62,i:"🎶",n:"Eletrônico/EDM"},{id:63,i:"🥁",n:"Samba & Pagode"},{id:64,i:"🎧",n:"Lo-fi & Chill"}]},
+  {g:"🎨 Artes & Criação",c:[{id:65,i:"🎨",n:"Artes Plásticas"},{id:66,i:"🖌️",n:"Desenho & Ilustração"},{id:67,i:"🖊️",n:"Mangá & Quadrinhos"},{id:68,i:"📸",n:"Fotografia"},{id:69,i:"🎬",n:"Produção de Vídeo"},{id:70,i:"✍️",n:"Escrita Criativa"},{id:71,i:"🎭",n:"Teatro"},{id:72,i:"🖼️",n:"Design Gráfico"},{id:73,i:"💃",n:"Dança"}]},
+  {g:"📚 Estudos & Ciências",c:[{id:74,i:"📚",n:"Literatura"},{id:75,i:"🔬",n:"Biologia"},{id:76,i:"🏆",n:"Olimpíadas"},{id:77,i:"📐",n:"Matemática"},{id:78,i:"🧪",n:"Química"},{id:79,i:"⚛️",n:"Física"},{id:80,i:"🚀",n:"Astronomia"},{id:81,i:"🧠",n:"Filosofia"},{id:82,i:"💰",n:"Empreendedorismo"},{id:83,i:"💻",n:"Programação"},{id:84,i:"🤖",n:"Robótica"}]},
+  {g:"🌍 Culturas & Entretenimento",c:[{id:85,i:"🎌",n:"Cultura Japonesa"},{id:86,i:"🇰🇷",n:"Cultura Coreana"},{id:87,i:"🎌",n:"Animes & Mangás"},{id:88,i:"🎬",n:"Filmes & Séries"},{id:89,i:"📖",n:"Leitura & HQs"},{id:90,i:"🃏",n:"Card Games (TCG)"},{id:91,i:"🎲",n:"RPG de Mesa"},{id:92,i:"🎭",n:"Cosplay"},{id:93,i:"✈️",n:"Viagens & Geografia"}]},
+];
+
+const ALL_CLUBS = CLUB_GROUPS.flatMap(g=>g.c);
+
+const MSG_TREE = [
+  {id:"m1",t:"Oi! Temos interesses em comum — qual você mais curte?",r:[
+    {id:"m1a",t:"Esportes! Você pratica no colégio?",r:[{id:"m1a1",t:"Demais! Qual horário você treina normalmente?"},{id:"m1a2",t:"Boa! Vamos nos encontrar na quadra no intervalo?"}]},
+    {id:"m1b",t:"Games! Qual você mais joga ultimamente?",r:[{id:"m1b1",t:"Sério?! PC, console ou mobile?"},{id:"m1b2",t:"Vou te achar no colégio essa semana!"}]},
+    {id:"m1c",t:"Animes! O que você está assistindo agora?",r:[{id:"m1c1",t:"Você também lê os mangás originais?"},{id:"m1c2",t:"Vamos conversar sobre isso no intervalo?"}]},
+  ]},
+  {id:"m2",t:"Em que turma e período você está?",r:[{id:"m2a",t:"Que coincidência, mesma fase!"},{id:"m2b",t:"Bacana! Você prefere manhã ou tarde?"},{id:"m2c",t:"Legal! Qual matéria você mais manda bem?"}]},
+  {id:"m3",t:"Faz quanto tempo que você estuda aqui?",r:[{id:"m3a",t:"Eu também sou novo, podemos nos apresentar!"},{id:"m3b",t:"Você já conhece muita gente então!"},{id:"m3c",t:"Qual parte do colégio você mais gosta?"}]},
+  {id:"m4",t:"Você faz alguma atividade extracurricular?",r:[{id:"m4a",t:"Que incrível! Como é essa atividade?"},{id:"m4b",t:"Boa! É dentro do colégio? Me conta mais."},{id:"m4c",t:"Quando começa? Eu quero participar também!"}]},
+  {id:"m5",t:"O que você mais gosta de fazer no intervalo?",r:[{id:"m5a",t:"Eu também! Quadra ou cantina?"},{id:"m5b",t:"Posso te encontrar lá amanhã?"},{id:"m5c",t:"A gente pode combinar de sair juntos!"}]},
+  {id:"m6",t:"Você conhece outros alunos com esse mesmo interesse?",r:[{id:"m6a",t:"Pode me apresentar pessoalmente?"},{id:"m6b",t:"Que tal a gente criar um grupo no colégio?"},{id:"m6c",t:"Vou perguntar em volta também!"}]},
+  {id:"m7",t:"Quer se encontrar pessoalmente no colégio? 🤝",r:[{id:"m7a",t:"Ótimo! Me procura no intervalo amanhã."},{id:"m7b",t:"Combinado! Qual é seu horário de entrada?"},{id:"m7c",t:"Perfeito! Até amanhã então!"}]},
+  {id:"m8",t:"Qual professor você acha mais inspirador?",r:[{id:"m8a",t:"Verdade! As aulas dele/dela são incríveis."},{id:"m8b",t:"Concordo! E qual matéria você mais curte?"},{id:"m8c",t:"Cada professor tem seu jeito único né!"}]},
+  {id:"m9",t:"Você participa das olimpíadas do colégio?",r:[{id:"m9a",t:"Que incrível! Em qual modalidade?"},{id:"m9b",t:"Quero participar! Como me inscrevo?"},{id:"m9c",t:"Quem sabe a gente tenta junto no próximo ano!"}]},
+  {id:"m10",t:"Tem algum clube que você queria que existisse aqui?",r:[{id:"m10a",t:"Que ideia incrível! Propõe para a direção."},{id:"m10b",t:"Concordo! Você toparia ajudar a criar?"},{id:"m10c",t:"Vamos ver se tem mais gente interessada!"}]},
+];
+const MEET_IDS=["m7","m7a","m7b","m7c"];
+
+const FAKE_USERS=[
+  {id:101,n:"Ana Lima",      y:"2º EM",     school:"Col. Est. Maringá",c:[1,28,87],av:"a1"},
+  {id:102,n:"Bruno Souza",   y:"1º Técnico",school:"UTFPR — Câmpus Maringá",c:[36,83,76],av:"a8"},
+  {id:103,n:"Carla Mendes",  y:"3º EM",     school:"Col. Marista Maringá",c:[56,87,85],av:"a3"},
+  {id:104,n:"Diego Torres",  y:"2º Técnico",school:"Col. Est. Maringá",c:[1,2,76],av:"a22"},
+  {id:105,n:"Elena Costa",   y:"1º EM",     school:"Col. Anglo Maringá",c:[74,73,65],av:"a7"},
+  {id:106,n:"Felipe Alves",  y:"3º Técnico",school:"Col. Nobel Maringá",c:[85,87,93],av:"a9"},
+  {id:107,n:"Gabi Rocha",    y:"2º EM",     school:"Col. Est. Tiradentes",c:[65,70,73],av:"a19"},
+  {id:108,n:"Hugo Neves",    y:"1º EM",     school:"Col. Dom Bosco Maringá",c:[28,31,43],av:"a18"},
+  {id:109,n:"Isabela Cruz",  y:"2º EM",     school:"Col. Marista Maringá",c:[56,86,87],av:"a20"},
+  {id:110,n:"João Pedro",    y:"3º EM",     school:"Col. Est. Maringá",c:[12,14,22],av:"a2"},
+  {id:111,n:"Larissa Matos", y:"1º EM",     school:"Col. Anglo Maringá",c:[56,87,73],av:"a12"},
+  {id:112,n:"Mateus Ramos",  y:"2º Técnico",school:"UTFPR — Câmpus Maringá",c:[83,79,80],av:"a35"},
+];
+
+// ── HELPERS ───────────────────────────────────────────────────
+const getAv = id => AVATARS.find(a=>a.id===id) || AVATARS[0];
+const shared = (a,b) => a.filter(x=>b.includes(x)).length;
+const rnd = arr => arr[Math.floor(Math.random()*arr.length)];
+const getRankBadge = pts => {
+  if(pts>=500) return {icon:"👑",label:"Lenda",color:"#FCD34D"};
+  if(pts>=250) return {icon:"💎",label:"Diamante",color:"#38BDF8"};
+  if(pts>=100) return {icon:"🥇",label:"Ouro",color:"#F59E0B"};
+  if(pts>=50)  return {icon:"🥈",label:"Prata",color:"#94A3B8"};
+  if(pts>=20)  return {icon:"🥉",label:"Bronze",color:"#CD7F32"};
+  return        {icon:"🎮",label:"Iniciante",color:"#6B7280"};
+};
+
+// ── GLOBAL CSS ────────────────────────────────────────────────
+function mkCSS(T,F){return `
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:${T.bg};font-family:${F.style};}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:${T.a}44;border-radius:4px;}
+input::placeholder,textarea::placeholder{color:${T.sub}88;}
+select option{background:${T.bg};color:${T.text};}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes slideR{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideL{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes glowP{0%,100%{box-shadow:0 0 20px ${T.a}40}50%{box-shadow:0 0 45px ${T.a}75}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes msgPop{0%{opacity:0;transform:scale(.8) translateY(10px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes navP{0%,100%{width:10px}50%{width:24px}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.04);opacity:.85}}
+@keyframes shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
+@keyframes confetti{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(400px) rotate(720deg);opacity:0}}
+@keyframes rankSlide{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes numberUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gameWin{0%{transform:scale(1)}30%{transform:scale(1.08)}60%{transform:scale(.96)}100%{transform:scale(1)}}
+
+.fu{animation:fadeUp .35s cubic-bezier(.16,1,.3,1) both}
+.fi{animation:fadeIn .28s ease both}
+.si{animation:scaleIn .32s cubic-bezier(.16,1,.3,1) both}
+.sr{animation:slideR .3s cubic-bezier(.16,1,.3,1) both}
+.sl{animation:slideL .3s cubic-bezier(.16,1,.3,1) both}
+.card{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;cursor:pointer;}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 28px ${T.a}22;}
+.card:active{transform:scale(.95);}
+.bp:active{transform:scale(.94);}
+.glow{animation:glowP 3s ease-in-out infinite;}
+.btn-main{transition:transform .15s,box-shadow .15s;}
+.btn-main:hover{transform:translateY(-1px);box-shadow:0 6px 22px ${T.a}44;}
+.btn-main:active{transform:translateY(1px);}
+`;}
+
+// ── ANIMATED BACKGROUND ───────────────────────────────────────
+function AnimBG({T}){
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}}>
+      <style>{`
+        @keyframes fl1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-40px) scale(1.1)}}
+        @keyframes fl2{0%,100%{transform:translate(0,0)}50%{transform:translate(-24px,32px) scale(.9)}}
+        @keyframes fl3{0%,100%{transform:translate(0,0)}33%{transform:translate(16px,22px)}66%{transform:translate(-14px,-12px)}}
+        @keyframes ptcl{0%{transform:translateY(110vh) scale(0);opacity:0}8%{opacity:.8}92%{opacity:.08}100%{transform:translateY(-5px) scale(1.2);opacity:0}}
+        @keyframes twkl{0%,100%{opacity:.1;transform:scale(.6)}50%{opacity:1;transform:scale(1.4)}}
+        @keyframes orb{from{transform:rotate(0deg) translateX(90px) rotate(0deg)}to{transform:rotate(360deg) translateX(90px) rotate(-360deg)}}
+      `}</style>
+      <div style={{position:"absolute",width:600,height:600,borderRadius:"50%",background:T.a+"14",filter:"blur(90px)",top:-120,left:-140,animation:"fl1 10s ease-in-out infinite"}}/>
+      <div style={{position:"absolute",width:500,height:500,borderRadius:"50%",background:T.b+"0E",filter:"blur(100px)",bottom:-80,right:-100,animation:"fl2 13s ease-in-out infinite"}}/>
+      <div style={{position:"absolute",width:320,height:320,borderRadius:"50%",background:T.a+"08",filter:"blur(70px)",top:"38%",left:"38%",animation:"fl3 16s ease-in-out infinite"}}/>
+      <div style={{position:"absolute",top:"50%",left:"50%",width:0,height:0}}>
+        <div style={{width:6,height:6,borderRadius:"50%",background:T.a,boxShadow:`0 0 12px ${T.a}`,animation:"orb 20s linear infinite"}}/>
+      </div>
+      {[...Array(16)].map((_,i)=>(
+        <div key={i} style={{position:"absolute",width:i%4===0?4:2,height:i%4===0?4:2,borderRadius:"50%",background:i%2===0?T.a:T.b,left:`${5+i*6}%`,animation:`ptcl ${5+i*.5}s ease-in-out infinite`,animationDelay:`${i*.4}s`,boxShadow:`0 0 ${i%3===0?10:5}px ${i%2===0?T.a:T.b}`}}/>
+      ))}
+      {[...Array(9)].map((_,i)=>(
+        <div key={"t"+i} style={{position:"absolute",fontSize:i%2===0?13:7,top:`${8+i*11}%`,right:`${2+i*10}%`,color:T.a+"45",animation:`twkl ${2.8+i*.7}s ease-in-out infinite`,animationDelay:`${i*.5}s`}}>✦</div>
+      ))}
+    </div>
+  );
+}
+
+// ── SHARED COMPONENTS ─────────────────────────────────────────
+function TopBar({T,title,right,sub}){
+  return(
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 0 12px",borderBottom:`1px solid ${T.a}12`,marginBottom:16}}>
+      <div>
+        <div style={{fontSize:title?16:20,fontWeight:900,letterSpacing:"-0.5px",background:`linear-gradient(135deg,${T.a},${T.b})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{title||"Taikoform"}</div>
+        {sub&&<div style={{fontSize:9,color:T.sub,marginTop:1}}>{sub}</div>}
+      </div>
+      {right}
+    </div>
+  );
+}
+
+function BotNav({T,tab,setTab}){
+  const items=[{id:"home",i:"🏠",l:"Início"},{id:"clubs",i:"🎯",l:"Clubes"},{id:"games",i:"🎮",l:"Jogos"},{id:"profile",i:"👤",l:"Perfil"}];
+  return(
+    <div style={{position:"fixed",bottom:0,left:0,right:0,background:T.bg+"F0",borderTop:`1px solid ${T.a}10`,backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",display:"flex",justifyContent:"space-around",padding:"8px 0 18px",zIndex:100}}>
+      {items.map(it=>{const act=tab===it.id;return(
+        <button key={it.id} onClick={()=>setTab(it.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"4px 12px",borderRadius:12,background:act?`${T.a}14`:"transparent",border:"none",color:act?T.a:T.sub,fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.4px",transition:"all .18s"}}>
+          <span style={{fontSize:20,filter:act?"none":"grayscale(1) opacity(.35)",transition:"filter .18s,transform .18s",transform:act?"translateY(-2px)":"none"}}>{it.i}</span>
+          {it.l}
+          {act&&<div style={{width:12,height:2.5,borderRadius:2,background:T.a,animation:"navP .4s both"}}/>}
+        </button>
+      );})}
+    </div>
+  );
+}
+
+function SecTitle({T,children,mt=0}){return <div style={{fontSize:10,fontWeight:800,color:T.sub,textTransform:"uppercase",letterSpacing:"1px",marginBottom:10,marginTop:mt}}>{children}</div>;}
+function DT({T,children}){return <div style={{fontSize:20,fontWeight:900,letterSpacing:"-0.5px",marginBottom:4,color:T.text,lineHeight:1.2}}>{children}</div>;}
+function DS({T,children}){return <div style={{fontSize:12,color:T.sub,marginBottom:16,lineHeight:1.6}}>{children}</div>;}
+function Badge({T,icon,label,color}){
+  return <span style={{display:"inline-flex",alignItems:"center",gap:4,background:`${color}18`,border:`1px solid ${color}38`,borderRadius:20,padding:"3px 8px",fontSize:10,fontWeight:700,color}}>
+    {icon} {label}
+  </span>;
+}
+function AvatarBubble({av,size=38,T}){
+  return <div style={{width:size,height:size,borderRadius:"50%",background:av.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.42,flexShrink:0}}>
+    {av.e}
+  </div>;
+}
+
+const BS = T=>({width:"100%",background:`linear-gradient(135deg,${T.a},${T.b})`,border:"none",borderRadius:12,color:"#fff",fontSize:13,fontWeight:800,padding:"13px",cursor:"pointer",marginTop:6,boxShadow:`0 4px 20px ${T.a}35`,letterSpacing:"0.3px"});
+const BO = T=>({width:"100%",background:"transparent",border:`1.5px solid ${T.a}24`,borderRadius:12,color:T.text,fontSize:12,fontWeight:600,padding:"11px",cursor:"pointer",marginTop:8,transition:"border-color .18s"});
+const bsm = T=>({background:`linear-gradient(135deg,${T.a},${T.b})`,border:"none",borderRadius:9,color:"#fff",fontSize:11,fontWeight:800,padding:"8px 14px",cursor:"pointer",letterSpacing:"0.2px"});
+const IS = T=>({width:"100%",background:T.surface,border:`1.5px solid ${T.a}1A`,borderRadius:11,color:T.text,fontSize:13,padding:"11px 13px",outline:"none",boxSizing:"border-box",marginBottom:12,fontFamily:"inherit",transition:"border-color .18s"});
+const SS = T=>({width:"100%",background:T.surface,border:`1.5px solid ${T.a}1A`,borderRadius:11,color:T.text,fontSize:12,padding:"11px 13px",outline:"none",boxSizing:"border-box",marginBottom:12,cursor:"pointer",fontFamily:"inherit"});
+const LS = T=>({fontSize:10,fontWeight:700,color:T.sub,textTransform:"uppercase",letterSpacing:"0.5px",display:"block",marginBottom:6});
+
+// ── SPLASH SCREEN ─────────────────────────────────────────────
+function SplashScreen({T,onDone}){
+  const [pct,setPct]=useState(0);
+  const [phase,setPhase]=useState(0);
+  useEffect(()=>{
+    const t=setInterval(()=>{setPct(p=>{const np=p+2;if(np>=100){clearInterval(t);setTimeout(()=>onDone(),400);return 100;}return np;});},35);
+    return()=>clearInterval(t);
+  },[onDone]);
+  useEffect(()=>{const t=setInterval(()=>setPhase(p=>(p+1)%4),600);return()=>clearInterval(t);},[]);
+  const msgs=["Carregando perfis…","Conectando alunos…","Preparando jogos…","Quase lá…"];
+  return(
+    <div style={{position:"fixed",inset:0,background:T.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:999}}>
+      <style>{`@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}@keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 20px ${T.a}60)}50%{filter:drop-shadow(0 0 40px ${T.a}90)}}`}</style>
+      <div style={{fontSize:70,animation:"logoFloat 2.5s ease-in-out infinite,logoGlow 2.5s ease-in-out infinite",marginBottom:24}}>🎌</div>
+      <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",background:`linear-gradient(135deg,${T.a},${T.b})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>Taikoform</div>
+      <div style={{fontSize:11,color:T.sub,marginBottom:36,letterSpacing:"2px",textTransform:"uppercase"}}>Conexão entre alunos</div>
+      <div style={{width:200,height:4,background:T.surface,borderRadius:4,overflow:"hidden",marginBottom:14}}>
+        <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${T.b},${T.a})`,borderRadius:4,transition:"width .1s linear",boxShadow:`0 0 12px ${T.a}60`}}/>
+      </div>
+      <div style={{fontSize:10,color:T.sub+"80",letterSpacing:"0.5px"}}>{msgs[phase]}</div>
+    </div>
+  );
+}
+
+// ── ONBOARDING ────────────────────────────────────────────────
+function OnboardingScr({T,onDone}){
+  const [step,setStep]=useState(0);
+  const steps=[
+    {icon:"🌎",title:"Bem-vindo à Taikoform",desc:"A plataforma criada para conectar alunos através de interesses em comum."},
+    {icon:"🎯",title:"Encontre seu pessoal",desc:"Escolha seus clubes favoritos — esportes, games, música, artes — e descubra quem pensa igual você."},
+    {icon:"🎮",title:"Compete e sobe no ranking",desc:"Jogue online contra outros alunos do colégio e dispute o topo do ranking em tempo real!"},
+    {icon:"🤝",title:"Conexão real",desc:"As amizades começam aqui mas se completam no colégio. Encontre as pessoas pessoalmente!"},
+  ];
+  const s=steps[step];
+  return(
+    <div style={{position:"fixed",inset:0,background:T.bg,display:"flex",flexDirection:"column",padding:"40px 24px 30px",zIndex:998}}>
+      <AnimBG T={T}/>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",zIndex:1}}>
+        <div key={step} style={{textAlign:"center",animation:"scaleIn .35s cubic-bezier(.16,1,.3,1) both"}}>
+          <div style={{fontSize:72,marginBottom:28,filter:`drop-shadow(0 0 24px ${T.a}60)`}}>{s.icon}</div>
+          <div style={{fontSize:22,fontWeight:900,letterSpacing:"-0.5px",color:T.text,marginBottom:12,lineHeight:1.2}}>{s.title}</div>
+          <div style={{fontSize:13,color:T.sub,lineHeight:1.7,maxWidth:280,margin:"0 auto"}}>{s.desc}</div>
+        </div>
+      </div>
+      <div style={{position:"relative",zIndex:1}}>
+        <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
+          {steps.map((_,i)=><div key={i} style={{height:3,borderRadius:2,background:i===step?T.a:T.a+"25",width:i===step?28:10,transition:"all .3s"}}/>)}
+        </div>
+        {step<steps.length-1
+          ?<button className="btn-main" onClick={()=>setStep(s=>s+1)} style={BS(T)}>Continuar →</button>
+          :<button className="btn-main" onClick={onDone} style={BS(T)}>Começar agora 🚀</button>
+        }
+        {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{...BO(T),marginTop:10}}>← Voltar</button>}
+      </div>
+    </div>
+  );
+}
+
+// ── AUTH ──────────────────────────────────────────────────────
+function AuthScr({T,onLogin}){
+  const [mode,setMode]=useState("login");
+  const [form,setForm]=useState({name:"",school:"",year:"",avatar:"a1"});
+  const [netKey,setNetKey]=useState("Rede Estadual");
+  const [err,setErr]=useState("");
+  const [avModal,setAvModal]=useState(false);
+  const av=getAv(form.avatar);
+  const years=["1º EM","2º EM","3º EM","1º Técnico","2º Técnico","3º Técnico","1º Fundamental","2º Fundamental","3º Fundamental"];
+  const handle=()=>{
+    if(mode==="login"){onLogin({name:"Eu",school:"Col. Est. Maringá",year:"2º EM",avatar:"a1",clubs:[],pts:0});return;}
+    if(!form.name.trim()){setErr("Digite seu nome.");return;}
+    if(!form.school){setErr("Escolha seu colégio.");return;}
+    if(!form.year){setErr("Escolha o ano/série.");return;}
+    onLogin({...form,clubs:[],pts:0});
+  };
+  return(
+    <div style={{position:"fixed",inset:0,background:T.bg,overflowY:"auto",padding:"28px 20px 40px",zIndex:998}}>
+      <AnimBG T={T}/>
+      <div style={{position:"relative",zIndex:1,maxWidth:380,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:28,animation:"fadeUp .4s both"}}>
+          <div style={{fontSize:52,marginBottom:10,filter:`drop-shadow(0 0 20px ${T.a}60)`,animation:"bounce 3s ease-in-out infinite"}}>🎌</div>
+          <div style={{fontSize:26,fontWeight:900,letterSpacing:"-0.8px",background:`linear-gradient(135deg,${T.a},${T.b})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Taikoform</div>
+          <div style={{fontSize:11,color:T.sub,marginTop:4,letterSpacing:"1.5px",textTransform:"uppercase"}}>Plataforma Escolar · Maringá PR</div>
+        </div>
+
+        <div style={{display:"flex",background:T.surface,borderRadius:12,padding:4,marginBottom:20,animation:"fadeUp .4s .05s both"}}>
+          {[["login","Entrar"],["register","Criar conta"]].map(([m,l])=>(
+            <button key={m} onClick={()=>{setMode(m);setErr("");}} style={{flex:1,border:"none",borderRadius:9,padding:"9px",background:mode===m?`linear-gradient(135deg,${T.a},${T.b})`:"transparent",color:mode===m?"#fff":T.sub,fontSize:12,fontWeight:700,cursor:"pointer",transition:"all .2s"}}>{l}</button>
+          ))}
+        </div>
+
+        <div style={{background:T.surface,border:`1px solid ${T.a}14`,borderRadius:16,padding:"20px",animation:"fadeUp .4s .1s both"}}>
+          {mode==="login"
+            ?<>
+              <DT T={T}>Bem-vindo de volta 👋</DT>
+              <DS T={T}>Modo demo — clique em Entrar para explorar a plataforma.</DS>
+              <button className="btn-main" onClick={handle} style={BS(T)}>Entrar →</button>
+            </>
+            :<>
+              <DT T={T}>Criar perfil 🎌</DT>
+              <DS T={T}>Preencha para encontrar alunos com os mesmos interesses.</DS>
+
+              <div style={{textAlign:"center",marginBottom:16}}>
+                <div onClick={()=>setAvModal(true)} className="card" style={{display:"inline-flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer"}}>
+                  <div className="glow" style={{width:62,height:62,borderRadius:"50%",background:av.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>{av.e}</div>
+                  <div style={{fontSize:10,color:T.a,fontWeight:700}}>Trocar avatar</div>
+                </div>
+              </div>
+
+              {avModal&&(
+                <div style={{background:T.card,border:`1px solid ${T.a}14`,borderRadius:12,padding:12,marginBottom:14,animation:"scaleIn .28s both"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,maxHeight:200,overflowY:"auto"}}>
+                    {AVATARS.map(a=>{const sel=form.avatar===a.id;return(
+                      <div key={a.id} onClick={()=>{setForm(f=>({...f,avatar:a.id}));setAvModal(false);}} className="card" style={{textAlign:"center",padding:"5px 2px",borderRadius:8,border:`2px solid ${sel?T.a:T.a+"0A"}`,background:sel?`${T.a}12`:"transparent"}}>
+                        <div style={{width:32,height:32,borderRadius:"50%",background:a.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,margin:"0 auto 2px"}}>{a.e}</div>
+                        <div style={{fontSize:7,color:sel?T.a:T.sub,fontWeight:600,lineHeight:1}}>{a.l}</div>
+                      </div>
+                    );})}
+                  </div>
+                </div>
+              )}
+
+              <label style={LS(T)}>Seu nome</label>
+              <input style={IS(T)} placeholder="Como você se chama?" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
+
+              <label style={LS(T)}>Rede de ensino</label>
+              <select style={SS(T)} value={netKey} onChange={e=>setNetKey(e.target.value)}>
+                {Object.keys(SCHOOLS).map(k=><option key={k}>{k}</option>)}
+              </select>
+
+              <label style={LS(T)}>Colégio</label>
+              <select style={SS(T)} value={form.school} onChange={e=>setForm(f=>({...f,school:e.target.value}))}>
+                <option value="">Selecione…</option>
+                {(SCHOOLS[netKey]||[]).map(s=><option key={s}>{s}</option>)}
+              </select>
+
+              <label style={LS(T)}>Ano / Série</label>
+              <select style={SS(T)} value={form.year} onChange={e=>setForm(f=>({...f,year:e.target.value}))}>
+                <option value="">Selecione…</option>
+                {years.map(y=><option key={y}>{y}</option>)}
+              </select>
+
+              {err&&<div style={{fontSize:11,color:"#F87171",marginBottom:10,padding:"8px",background:"#F8717114",borderRadius:8,border:"1px solid #F8717130"}}>{err}</div>}
+              <button className="btn-main" onClick={handle} style={BS(T)}>Criar perfil 🚀</button>
+            </>
+          }
+        </div>
+        <div style={{textAlign:"center",fontSize:9,color:T.sub+"40",marginTop:16}}>Criado por Isaac · Liga Jovem Sebrae · Maringá PR</div>
+      </div>
+    </div>
+  );
+}
+
+// ── GAMES ─────────────────────────────────────────────────────
+// Tic Tac Toe
+function TicTacToe({T,onScore,playerName}){
+  const [board,setBoard]=useState(Array(9).fill(null));
+  const [isX,setIsX]=useState(true);
+  const [status,setStatus]=useState("");
+  const [wins,setWins]=useState(0);
+  const winLines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const checkWin=b=>{for(let[a,c,d]of winLines)if(b[a]&&b[a]===b[c]&&b[a]===b[d])return b[a];return b.every(Boolean)?"D":null;};
+  const click=i=>{
+    if(board[i]||status)return;
+    const nb=[...board];nb[i]="X";
+    const r=checkWin(nb);setBoard(nb);setIsX(false);
+    if(r==="X"){setStatus("win");setWins(w=>w+1);onScore(15);return;}
+    if(r==="D"){setStatus("draw");return;}
+    setTimeout(()=>{
+      const empty=nb.map((v,idx)=>v?null:idx).filter(v=>v!==null);
+      if(!empty.length)return;
+      const nb2=[...nb];
+      // simple AI: win if can, block if can, else random
+      let best=null;
+      for(let idx of empty){const t=[...nb2];t[idx]="O";if(checkWin(t)==="O"){best=idx;break;}}
+      if(best===null)for(let idx of empty){const t=[...nb2];t[idx]="X";if(checkWin(t)==="X"){best=idx;break;}}
+      if(best===null)best=rnd(empty);
+      nb2[best]="O";
+      const r2=checkWin(nb2);setBoard(nb2);setIsX(true);
+      if(r2==="O")setStatus("lose");
+      else if(r2==="D")setStatus("draw");
+    },400);
+  };
+  const reset=()=>{setBoard(Array(9).fill(null));setIsX(true);setStatus("");};
+  const winLine=winLines.find(([a,b,c])=>board[a]&&board[a]===board[b]&&board[a]===board[c]);
+  return(
+    <div style={{textAlign:"center"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,padding:"8px 12px",background:T.surface,borderRadius:10,border:`1px solid ${T.a}10`}}>
+        <div style={{fontSize:11,color:T.sub}}>Vitórias: <span style={{color:T.a,fontWeight:800}}>{wins}</span></div>
+        <div style={{fontSize:11,color:T.text,fontWeight:700}}>{status?"":isX?"Sua vez ✕":"Computador ○"}</div>
+        <div style={{fontSize:11,color:T.sub}}>+15 pts/vitória</div>
+      </div>
+      {status&&(
+        <div key={status} style={{fontSize:14,fontWeight:800,color:status==="win"?T.a:status==="lose"?"#F87171":T.sub,marginBottom:10,padding:"10px",background:status==="win"?`${T.a}14`:"transparent",borderRadius:10,border:`1px solid ${status==="win"?T.a:T.a+"10"}`,animation:"gameWin .4s both"}}>
+          {status==="win"?"🎉 Você venceu! +15 pts":status==="lose"?"😢 Computador venceu — tente de novo!":"🤝 Empate — bem disputado!"}
+        </div>
+      )}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,maxWidth:210,margin:"0 auto 14px"}}>
+        {board.map((v,i)=>{
+          const isWin=winLine?.includes(i);
+          return(
+            <div key={i} onClick={()=>click(i)} style={{width:64,height:64,borderRadius:12,background:isWin?`${T.a}24`:T.surface,border:`2px solid ${isWin?T.a:v?T.a+"40":T.a+"18"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,fontWeight:900,cursor:v||status?"default":"pointer",color:v==="X"?T.a:T.b,transition:"all .15s",boxShadow:isWin?`0 0 18px ${T.a}50`:"none"}}>
+              {v}
+            </div>
+          );
+        })}
+      </div>
+      {status&&<button className="btn-main" onClick={reset} style={bsm(T)}>Jogar novamente</button>}
+    </div>
+  );
+}
+
+// Hangman
+const PALAVRAS=["AMIZADE","COLÉGIO","INTERVALO","PROFESSOR","ESTUDANTE","CLUBE","ESPORTE","ANIME","MÚSICA","AVENTURA","DESAFIO","PROGRAMAÇÃO","FOTOGRAFIA","LITERATURA","BASQUETE","FUTEBOL","CRIATIVIDADE","MARINGÁ","DESCOBERTA","FELICIDADE","CONHECIMENTO","LIDERANÇA"];
+function Hangman({T,onScore}){
+  const [word,setWord]=useState(()=>rnd(PALAVRAS));
+  const [guessed,setGuessed]=useState([]);
+  const [errors,setErrors]=useState(0);
+  const max=6;
+  const display=word.split("").map(l=>guessed.includes(l)?l:"_");
+  const won=display.every(l=>l!=="_");
+  const lost=errors>=max;
+  const guess=l=>{
+    if(guessed.includes(l)||won||lost)return;
+    const ng=[...guessed,l];setGuessed(ng);
+    if(!word.includes(l)){setErrors(e=>e+1);}
+    else if(word.split("").map(c=>ng.includes(c)?c:"_").every(c=>c!=="_")){onScore(20);}
+  };
+  const reset=()=>{setWord(rnd(PALAVRAS));setGuessed([]);setErrors(0);};
+  const limbParts=[
+    "M20,78 L80,78","M50,78 L50,15","M50,15 L72,15","M72,15 L72,30",
+    "M72,30 C72,38 66,42 66,42 C72,42 78,38 72,30",
+    "M72,46 L72,62","M72,52 L63,46 M72,52 L81,46",
+    "M72,62 L63,73 M72,62 L81,73",
+  ];
+  return(
+    <div style={{textAlign:"center"}}>
+      <div style={{display:"flex",justifyContent:"center",gap:16,marginBottom:10,padding:"8px",background:T.surface,borderRadius:10,border:`1px solid ${T.a}10`}}>
+        <div style={{fontSize:10,color:T.sub}}>Erros: <span style={{color:"#F87171",fontWeight:800}}>{errors}/{max}</span></div>
+        <div style={{fontSize:10,color:T.sub}}>Letras: <span style={{color:T.a,fontWeight:800}}>{guessed.length}</span></div>
+      </div>
+      <svg width={110} height={90} style={{display:"block",margin:"0 auto 10px"}}>
+        {limbParts.slice(0,Math.min(errors+2,limbParts.length)).map((d,i)=>(
+          <path key={i} d={d} stroke={i<2?"#555":i===2||i===3?T.sub+"80":T.a} strokeWidth={i<4?2.5:2} strokeLinecap="round" fill="none" style={{animation:"fadeIn .2s both"}}/>
+        ))}
+      </svg>
+      <div style={{fontSize:22,letterSpacing:10,fontWeight:900,color:T.text,marginBottom:8,letterSpacing:8,fontFamily:"monospace"}}>{display.join(" ")}</div>
+      {(won||lost)&&(
+        <div style={{fontSize:13,color:won?T.a:"#F87171",fontWeight:700,marginBottom:10,animation:"gameWin .4s both"}}>
+          {won?"🎉 Acertou! +20 pts":"💀 Era: "+word}
+        </div>
+      )}
+      <div style={{display:"flex",flexWrap:"wrap",gap:3,justifyContent:"center",maxWidth:285,margin:"0 auto 10px"}}>
+        {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l=>{
+          const used=guessed.includes(l);const hit=word.includes(l)&&used;const miss=!word.includes(l)&&used;
+          return(
+            <div key={l} onClick={()=>guess(l)} style={{width:26,height:26,borderRadius:7,background:hit?`${T.a}28`:miss?"#F8717118":T.surface,border:`1.5px solid ${hit?T.a:miss?"#F8717160":T.a+"18"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,cursor:used||won||lost?"default":"pointer",color:hit?T.a:miss?"#F87171":T.text,opacity:used?.55:1,transition:"all .12s"}}>
+              {l}
+            </div>
+          );
+        })}
+      </div>
+      {(won||lost)&&<button className="btn-main" onClick={reset} style={bsm(T)}>Nova palavra</button>}
+    </div>
+  );
+}
+
+// Snake
+const SNAKE_COLS=14,SNAKE_ROWS=20;
+function Snake({T,onScore}){
+  const [snake,setSnake]=useState([[7,10],[7,11],[7,12]]);
+  const [food,setFood]=useState([3,5]);
+  const [dir,setDir]=useState([0,-1]);
+  const [on,setOn]=useState(false);
+  const [over,setOver]=useState(false);
+  const [score,setScore]=useState(0);
+  const dirRef=useRef([0,-1]);const snakeRef=useRef([[7,10],[7,11],[7,12]]);const foodRef=useRef([3,5]);
+  const newFood=useCallback(()=>{let f;do{f=[Math.floor(Math.random()*SNAKE_COLS),Math.floor(Math.random()*SNAKE_ROWS)];}while(snakeRef.current.some(([x,y])=>x===f[0]&&y===f[1]));return f;},[]);
+  const step=useCallback(()=>{
+    const s=snakeRef.current;const[dx,dy]=dirRef.current;const[hx,hy]=s[0];const nx=hx+dx;const ny=hy+dy;
+    if(nx<0||nx>=SNAKE_COLS||ny<0||ny>=SNAKE_ROWS||s.some(([x,y])=>x===nx&&y===ny)){setOn(false);setOver(true);return;}
+    const ate=(nx===foodRef.current[0]&&ny===foodRef.current[1]);
+    const ns=ate?[[nx,ny],...s]:[[nx,ny],...s.slice(0,-1)];
+    snakeRef.current=ns;setSnake([...ns]);
+    if(ate){const nf=newFood();foodRef.current=nf;setFood(nf);setScore(sc=>{const ns2=sc+10;onScore(10);return ns2;});}
+  },[newFood,onScore]);
+  useEffect(()=>{if(!on)return;const t=setInterval(step,130);return()=>clearInterval(t);},[on,step]);
+  const setDir2=d=>{
+    const[dx,dy]=d;const[cdx,cdy]=dirRef.current;
+    if(dx===-cdx&&dy===-cdy)return;
+    dirRef.current=d;setDir(d);
+  };
+  const start=()=>{const s=[[7,10],[7,11],[7,12]];snakeRef.current=s;setSnake(s);dirRef.current=[0,-1];setDir([0,-1]);const f=newFood();foodRef.current=f;setFood(f);setScore(0);setOver(false);setOn(true);};
+  const cSize=Math.floor(Math.min(290,window.innerWidth-60)/SNAKE_COLS);
+  return(
+    <div style={{textAlign:"center"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"8px 12px",background:T.surface,borderRadius:10,border:`1px solid ${T.a}10`}}>
+        <div style={{fontSize:11,color:T.sub}}>Pts: <span style={{color:T.a,fontWeight:800}}>{score}</span></div>
+        <div style={{fontSize:11,color:T.text,fontWeight:700}}>{over?"GAME OVER 💀":on?"🐍 Jogando":"Pronto!"}</div>
+        <div style={{fontSize:11,color:T.sub}}>+10/maçã</div>
+      </div>
+      <div style={{display:"inline-block",border:`2px solid ${T.a}28`,borderRadius:10,overflow:"hidden",marginBottom:12,boxShadow:`0 0 24px ${T.a}18`}}>
+        {Array(SNAKE_ROWS).fill(0).map((_,y)=>(
+          <div key={y} style={{display:"flex"}}>
+            {Array(SNAKE_COLS).fill(0).map((_2,x)=>{
+              const isHead=snake[0]?.[0]===x&&snake[0]?.[1]===y;
+              const isBody=!isHead&&snake.some(([sx,sy])=>sx===x&&sy===y);
+              const isFood=food[0]===x&&food[1]===y;
+              return(
+                <div key={x} style={{width:cSize,height:cSize,background:isHead?T.a:isBody?T.a+"70":isFood?"#F87171":T.bg,borderRadius:isHead?4:isBody?2:0,transition:isHead?"none":"background .08s",boxShadow:isHead?`0 0 8px ${T.a}`:isFood?"0 0 6px #F87171":undefined}}/>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:8}}>
+        {!on&&<button className="btn-main" onClick={start} style={bsm(T)}>{over?"Jogar de novo":"▶ Iniciar"}</button>}
+        {on&&<>
+          <button onClick={()=>setDir2([0,-1])} style={{...bsm(T),fontSize:16,padding:"6px 14px"}}>↑</button>
+          <button onClick={()=>setDir2([-1,0])} style={{...bsm(T),fontSize:16,padding:"6px 14px"}}>←</button>
+          <button onClick={()=>setDir2([0,1])} style={{...bsm(T),fontSize:16,padding:"6px 14px"}}>↓</button>
+          <button onClick={()=>setDir2([1,0])} style={{...bsm(T),fontSize:16,padding:"6px 14px"}}>→</button>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+// Memory Game
+const EMOJIS_PAIRS=["🦊","🐺","🐸","🦁","🐉","⚡","🌙","🎮","🔥","🌊","🎵","🦋"];
+function MemoryGame({T,onScore}){
+  const [cards,setCards]=useState(()=>{const c=[...EMOJIS_PAIRS,...EMOJIS_PAIRS].map((e,i)=>({id:i,emoji:e,flipped:false,matched:false}));for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]];}return c;});
+  const [selected,setSelected]=useState([]);
+  const [moves,setMoves]=useState(0);
+  const [won,setWon]=useState(false);
+  const [lock,setLock]=useState(false);
+  const flip=i=>{
+    if(lock||cards[i].flipped||cards[i].matched)return;
+    const nc=[...cards];nc[i]={...nc[i],flipped:true};
+    const ns=[...selected,i];setSelected(ns);setCards(nc);
+    if(ns.length===2){
+      setMoves(m=>m+1);setLock(true);
+      const[a,b]=ns;
+      if(nc[a].emoji===nc[b].emoji){
+        setTimeout(()=>{setCards(c=>{const x=[...c];x[a]={...x[a],matched:true};x[b]={...x[b],matched:true};const allDone=x.every(c=>c.matched);if(allDone){setWon(true);onScore(30);}return x;});setSelected([]);setLock(false);},500);
+      }else{
+        setTimeout(()=>{setCards(c=>{const x=[...c];x[a]={...x[a],flipped:false};x[b]={...x[b],flipped:false};return x;});setSelected([]);setLock(false);},900);
+      }
+    }
+  };
+  const reset=()=>{const c=[...EMOJIS_PAIRS,...EMOJIS_PAIRS].map((e,i)=>({id:i,emoji:e,flipped:false,matched:false}));for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]];}setCards(c);setSelected([]);setMoves(0);setWon(false);setLock(false);};
+  return(
+    <div style={{textAlign:"center"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,padding:"8px 12px",background:T.surface,borderRadius:10,border:`1px solid ${T.a}10`}}>
+        <div style={{fontSize:11,color:T.sub}}>Movimentos: <span style={{color:T.a,fontWeight:800}}>{moves}</span></div>
+        <div style={{fontSize:11,color:T.text,fontWeight:700}}>{won?"✅ Completo!":"🧠 Memória"}</div>
+        <div style={{fontSize:11,color:T.sub}}>+30 pts</div>
+      </div>
+      {won&&<div style={{fontSize:13,color:T.a,fontWeight:800,marginBottom:10,animation:"gameWin .4s both"}}>🎉 Parabéns! +30 pts em {moves} movimentos!</div>}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:5,maxWidth:300,margin:"0 auto 14px"}}>
+        {cards.map((c,i)=>(
+          <div key={c.id} onClick={()=>flip(i)} className="card" style={{width:42,height:42,borderRadius:9,background:c.flipped||c.matched?T.surface:T.card,border:`2px solid ${c.matched?T.a:c.flipped?T.b:T.a+"18"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:c.flipped||c.matched?20:0,cursor:"pointer",boxShadow:c.matched?`0 0 10px ${T.a}40`:"none",transition:"all .2s",opacity:c.matched?.5:1}}>
+            {(c.flipped||c.matched)?c.emoji:""}
+          </div>
+        ))}
+      </div>
+      <button className="btn-main" onClick={reset} style={bsm(T)}>{won?"Jogar novamente":"🔀 Embaralhar"}</button>
+    </div>
+  );
+}
+
+// Quiz Escola
+const QUIZ_Q=[
+  {q:"Qual é o tipo de triângulo com todos os lados iguais?",opts:["Escaleno","Isósceles","Equilátero","Retângulo"],a:2},
+  {q:"Quem escreveu 'Dom Casmurro'?",opts:["José de Alencar","Machado de Assis","Clarice Lispector","Guimarães Rosa"],a:1},
+  {q:"Qual é a fórmula da água?",opts:["CO₂","NaCl","H₂O","O₂"],a:2},
+  {q:"Em que ano o Brasil foi descoberto?",opts:["1488","1492","1500","1510"],a:2},
+  {q:"Qual planeta é o maior do sistema solar?",opts:["Saturno","Netuno","Terra","Júpiter"],a:3},
+  {q:"Quanto é √144?",opts:["11","12","13","14"],a:1},
+  {q:"Capital do Brasil?",opts:["São Paulo","Rio de Janeiro","Brasília","Manaus"],a:2},
+  {q:"O que significa DNA?",opts:["Dado Numérico Avançado","Ácido Desoxirribonucleico","Dióxido Nitroso Atômico","Duplo Nêutron Ativo"],a:1},
+  {q:"Qual é o elemento químico de símbolo 'Au'?",opts:["Prata","Platina","Cobre","Ouro"],a:3},
+  {q:"Quem pintou a Mona Lisa?",opts:["Michelangelo","Rafael","Leonardo da Vinci","Caravaggio"],a:2},
+];
+function SchoolQuiz({T,onScore}){
+  const [qs]=useState(()=>{const s=[...QUIZ_Q];for(let i=s.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[s[i],s[j]]=[s[j],s[i]];}return s.slice(0,6);});
+  const [cur,setCur]=useState(0);const [chosen,setChosen]=useState(null);const [pts,setPts]=useState(0);const [done,setDone]=useState(false);
+  const pick=i=>{
+    if(chosen!==null)return;setChosen(i);
+    if(i===qs[cur].a){const np=pts+10;setPts(np);onScore(10);}
+    setTimeout(()=>{
+      if(cur+1>=qs.length){setDone(true);}else{setCur(c=>c+1);setChosen(null);}
+    },1000);
+  };
+  const reset=()=>{setCur(0);setChosen(null);setPts(0);setDone(false);};
+  if(done)return(
+    <div style={{textAlign:"center"}}>
+      <div style={{fontSize:48,marginBottom:12}}>🎓</div>
+      <div style={{fontSize:18,fontWeight:900,color:T.a,marginBottom:6}}>Quiz completo!</div>
+      <div style={{fontSize:14,color:T.text,marginBottom:4}}>Você acertou <strong style={{color:T.a}}>{pts/10}</strong> de {qs.length} questões</div>
+      <div style={{fontSize:13,color:T.sub,marginBottom:16}}>+{pts} pontos conquistados</div>
+      <button className="btn-main" onClick={reset} style={bsm(T)}>Jogar novamente</button>
+    </div>
+  );
+  const q=qs[cur];
+  return(
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,padding:"8px 12px",background:T.surface,borderRadius:10,border:`1px solid ${T.a}10`}}>
+        <div style={{fontSize:11,color:T.sub}}>Pts: <span style={{color:T.a,fontWeight:800}}>{pts}</span></div>
+        <div style={{fontSize:11,color:T.text,fontWeight:700}}>{cur+1}/{qs.length}</div>
+        <div style={{fontSize:11,color:T.sub}}>+10/acerto</div>
+      </div>
+      <div style={{height:3,background:T.surface,borderRadius:2,marginBottom:14}}>
+        <div style={{height:"100%",width:`${((cur)/qs.length)*100}%`,background:`linear-gradient(90deg,${T.b},${T.a})`,borderRadius:2,transition:"width .4s ease"}}/>
+      </div>
+      <div key={cur} style={{fontSize:14,fontWeight:700,color:T.text,marginBottom:16,lineHeight:1.5,animation:"fadeUp .3s both"}}>{q.q}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:8,animation:"fadeUp .3s .05s both"}}>
+        {q.opts.map((opt,i)=>{
+          const isChosen=chosen===i;const isRight=chosen!==null&&i===q.a;const isWrong=isChosen&&i!==q.a;
+          return(
+            <button key={i} onClick={()=>pick(i)} style={{background:isRight?`${T.a}24`:isWrong?"#F8717118":T.surface,border:`2px solid ${isRight?T.a:isWrong?"#F87171":T.a+"18"}`,borderRadius:11,color:isRight?T.a:isWrong?"#F87171":T.text,fontSize:12,fontWeight:isChosen?700:500,padding:"11px 14px",cursor:chosen!==null?"default":"pointer",textAlign:"left",transition:"all .2s"}}>
+              {isRight?"✅ ":isWrong?"❌ ":""}{opt}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Tetris
+const TET_PIECES={I:[[1,1,1,1]],O:[[1,1],[1,1]],T:[[0,1,0],[1,1,1]],S:[[0,1,1],[1,1,0]],Z:[[1,1,0],[0,1,1]],L:[[1,0],[1,0],[1,1]],J:[[0,1],[0,1],[1,1]]};
+const TET_COLORS=["#EF4444","#F97316","#EAB308","#22C55E","#3B82F6","#8B5CF6","#EC4899"];
+const TW=10,TH=18;
+function Tetris({T,onScore}){
+  const [grid,setGrid]=useState(()=>Array(TH).fill(null).map(()=>Array(TW).fill(0)));
+  const [cur,setCur]=useState(null);const [next,setNext]=useState(null);const [sc,setSc]=useState(0);const [on,setOn]=useState(false);const [ov,setOv]=useState(false);const [level,setLevel]=useState(1);
+  const gRef=useRef(grid);const cRef=useRef(cur);const scRef=useRef(0);
+  gRef.current=grid;cRef.current=cur;
+  const mkPiece=useCallback(()=>{const ks=Object.keys(TET_PIECES);const k=rnd(ks);const sh=TET_PIECES[k];return{shape:sh,col:Math.floor((TW-sh[0].length)/2),row:0,color:rnd(TET_COLORS)};},[]);
+  const fits=(g,p,dr=0,dc=0)=>p.shape.every((row,ri)=>row.every((v,ci)=>{if(!v)return true;const nr=p.row+ri+dr,nc=p.col+ci+dc;return nr>=0&&nr<TH&&nc>=0&&nc<TW&&!g[nr][nc];}));
+  const merge=(g,p)=>{const ng=g.map(r=>[...r]);p.shape.forEach((row,ri)=>row.forEach((v,ci)=>{if(v)ng[p.row+ri][p.col+ci]=p.color;}));return ng;};
+  const clear=g=>{const kept=g.filter(row=>row.some(c=>!c));const cl=TH-kept.length;return{grid:[...Array(cl).fill(null).map(()=>Array(TW).fill(0)),...kept],cleared:cl};};
+  const drop=useCallback(()=>{
+    const p=cRef.current;const g=gRef.current;if(!p)return;
+    if(fits(g,p,1,0)){setCur(c=>({...c,row:c.row+1}));}else{
+      const mg=merge(g,p);const{grid:ng,cleared}=clear(mg);setGrid(ng);
+      if(cleared){setSc(s=>{const ns=s+cleared*100*(Math.floor(s/500)+1);scRef.current=ns;onScore(cleared*12);setLevel(Math.floor(ns/500)+1);return ns;});}
+      const np2=mkPiece();if(!fits(ng,np2)){setOv(true);setOn(false);setCur(null);}
+      else{setCur(np2);setNext(mkPiece());}
+    }
+  },[mkPiece,onScore]);
+  const speed=Math.max(120,480-((level-1)*60));
+  useEffect(()=>{if(!on)return;const t=setInterval(drop,speed);return()=>clearInterval(t);},[on,drop,speed]);
+  const mv=dc=>{if(cur&&fits(grid,cur,0,dc))setCur(c=>({...c,col:c.col+dc}));};
+  const rot=()=>{if(!cur)return;const r=cur.shape[0].map((_,i)=>cur.shape.map(row=>row[i]).reverse());const np2={...cur,shape:r};if(fits(grid,np2))setCur(np2);};
+  const hardDrop=()=>{if(!cur)return;let dr=0;while(fits(grid,cur,dr+1,0))dr++;setCur(c=>({...c,row:c.row+dr}));setTimeout(drop,50);};
+  const start=()=>{const p=mkPiece();setGrid(Array(TH).fill(null).map(()=>Array(TW).fill(0)));setCur(p);setNext(mkPiece());setSc(0);scRef.current=0;setLevel(1);setOn(true);setOv(false);};
+  const disp=grid.map(r=>[...r]);
+  if(cur)cur.shape.forEach((row,ri)=>row.forEach((v,ci)=>{if(v&&cur.row+ri<TH)disp[cur.row+ri][cur.col+ci]=cur.color;}));
+  const cSize=Math.floor(Math.min(250,window.innerWidth-100)/TW);
+  return(
+    <div style={{textAlign:"center"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"8px 12px",background:T.surface,borderRadius:10,border:`1px solid ${T.a}10`}}>
+        <div><div style={{fontSize:9,color:T.sub}}>PONTOS</div><div style={{fontSize:14,fontWeight:900,color:T.a}}>{sc}</div></div>
+        <div><div style={{fontSize:9,color:T.sub}}>NÍVEL</div><div style={{fontSize:14,fontWeight:900,color:T.b}}>{level}</div></div>
+        {next&&<div style={{textAlign:"center"}}>
+          <div style={{fontSize:9,color:T.sub,marginBottom:3}}>PRÓXIMO</div>
+          {next.shape.map((row,ri)=><div key={ri} style={{display:"flex",justifyContent:"center"}}>{row.map((v,ci)=><div key={ci} style={{width:8,height:8,background:v?next.color:"transparent",borderRadius:1,margin:1}}/>)}</div>)}
+        </div>}
+      </div>
+      {ov&&<div style={{fontSize:13,color:"#F87171",fontWeight:800,marginBottom:8,animation:"gameWin .4s both"}}>💀 GAME OVER — {sc} pts!</div>}
+      <div style={{display:"inline-block",border:`2px solid ${T.a}28`,borderRadius:10,overflow:"hidden",marginBottom:8,boxShadow:`0 0 20px ${T.a}14`}}>
+        {disp.map((row,r)=>(
+          <div key={r} style={{display:"flex"}}>
+            {row.map((cell,c)=>(
+              <div key={c} style={{width:cSize,height:cSize,background:cell||T.bg,border:`0.5px solid ${T.a}08`,borderRadius:1,boxShadow:cell?"inset 0 1px 2px rgba(255,255,255,.2)":undefined,transition:"background .06s"}}/>
+            ))}
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:5,justifyContent:"center",flexWrap:"wrap"}}>
+        {!on&&!ov&&<button className="btn-main" onClick={start} style={bsm(T)}>▶ Iniciar</button>}
+        {on&&<>
+          <button onClick={()=>mv(-1)} style={{...bsm(T),padding:"8px 14px",fontSize:16}}>←</button>
+          <button onClick={hardDrop} style={{...bsm(T),padding:"8px 14px",fontSize:16}}>↓↓</button>
+          <button onClick={drop} style={{...bsm(T),padding:"8px 14px",fontSize:16}}>↓</button>
+          <button onClick={()=>mv(1)} style={{...bsm(T),padding:"8px 14px",fontSize:16}}>→</button>
+          <button onClick={rot} style={{...bsm(T),padding:"8px 14px",fontSize:14}}>↻</button>
+        </>}
+        {ov&&<button className="btn-main" onClick={start} style={bsm(T)}>Jogar de novo</button>}
+      </div>
+    </div>
+  );
+}
+
+// Dino Runner (upgraded)
+function Dino({T,onScore}){
+  const [dinoY,setDinoY]=useState(0);const [obsX,setObsX]=useState(320);const [sc,setSc]=useState(0);const [on,setOn]=useState(false);const [ov,setOv]=useState(false);const [speed,setSpeed]=useState(4);const [obsH,setObsH]=useState(28);
+  const jumping=useRef(false);const oxRef=useRef(320);const scRef=useRef(0);const dyRef=useRef(0);const spRef=useRef(4);
+  const jump=useCallback(()=>{
+    if(jumping.current||!on)return;jumping.current=true;
+    let h=0;const up=setInterval(()=>{h+=9;dyRef.current=h;setDinoY(h);if(h>=80)clearInterval(up);},16);
+    setTimeout(()=>{const dn=setInterval(()=>{h-=6;dyRef.current=Math.max(0,h);setDinoY(Math.max(0,h));if(h<=0){clearInterval(dn);jumping.current=false;}},16);},400);
+  },[on]);
+  useEffect(()=>{
+    if(!on)return;
+    const lp=setInterval(()=>{
+      const sp=spRef.current;oxRef.current-=sp;
+      if(oxRef.current<-28){oxRef.current=320+Math.random()*80;scRef.current++;setSc(s=>s+1);spRef.current=Math.min(10,4+scRef.current*0.05);setSpeed(spRef.current);if(scRef.current%6===0)onScore(8);}
+      setObsX(oxRef.current);
+      const oH=obsH;
+      if(oxRef.current<70&&oxRef.current>24&&oH-dyRef.current+4>-8&&dyRef.current<oH+8){clearInterval(lp);setOn(false);setOv(true);}
+    },24);
+    return()=>clearInterval(lp);
+  },[on,onScore,obsH]);
+  useEffect(()=>{const h=e=>{if(e.key===" "||e.key==="ArrowUp")jump();};window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);},[jump]);
+  const start=()=>{setOn(true);setOv(false);setSc(0);scRef.current=0;oxRef.current=320;setObsX(320);dyRef.current=0;setDinoY(0);jumping.current=false;spRef.current=4;setSpeed(4);setObsH(20+Math.floor(Math.random()*20));};
+  return(
+    <div style={{textAlign:"center"}} onClick={jump}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"8px 12px",background:T.surface,borderRadius:10,border:`1px solid ${T.a}10`}}>
+        <div style={{fontSize:11,color:T.sub}}>Pts: <span style={{color:T.a,fontWeight:800}}>{sc}</span></div>
+        <div style={{fontSize:11,color:T.text,fontWeight:700}}>{ov?"GAME OVER 💀":on?"Toque/Espaço para pular":"Pronto!"}</div>
+        <div style={{fontSize:11,color:T.sub}}>Vel: {speed.toFixed(1)}</div>
+      </div>
+      <div style={{position:"relative",width:"100%",maxWidth:320,height:88,background:T.surface,borderRadius:12,border:`1px solid ${T.a}18`,margin:"0 auto 12px",overflow:"hidden",cursor:"pointer",boxShadow:`0 0 20px ${T.a}12`}}>
+        <div style={{position:"absolute",bottom:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${T.a}40,transparent)`}}/>
+        <div style={{position:"absolute",bottom:6+dinoY,left:30,fontSize:26,transition:"bottom .016s linear"}}>🦕</div>
+        {on&&<div style={{position:"absolute",bottom:6,left:obsX,fontSize:obsH>30?24:20,lineHeight:1}}>🌵</div>}
+        {[...Array(8)].map((_,i)=><div key={i} style={{position:"absolute",bottom:2,left:`${5+i*13}%`,width:20,height:2,background:T.a+"18",borderRadius:1}}/>)}
+      </div>
+      <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+        {!on&&!ov&&<button className="btn-main" onClick={e=>{e.stopPropagation();start();}} style={bsm(T)}>▶ Iniciar</button>}
+        {on&&<button onClick={e=>{e.stopPropagation();jump();}} style={bsm(T)}>⬆ Pular</button>}
+        {ov&&<button className="btn-main" onClick={e=>{e.stopPropagation();start();}} style={bsm(T)}>Jogar de novo</button>}
+      </div>
+    </div>
+  );
+}
+
+const GAME_LIST=[
+  {id:"ttt",    name:"Jogo da Velha", icon:"❌", desc:"Vs computador inteligente", pts:"+15 pts"},
+  {id:"hang",   name:"Forca",        icon:"😵", desc:"Adivinhe palavras escolares",pts:"+20 pts"},
+  {id:"snake",  name:"Cobrinha",     icon:"🐍", desc:"Come, cresce e fica difícil",pts:"+10/maçã"},
+  {id:"memory", name:"Memória",      icon:"🧠", desc:"Encontre os pares de emojis",pts:"+30 pts"},
+  {id:"quiz",   name:"Quiz Escola",  icon:"🎓", desc:"Perguntas de várias matérias",pts:"+10/acerto"},
+  {id:"tet",    name:"Tetris",       icon:"🟦", desc:"Encaixe os blocos perfeitos", pts:"+12/linha"},
+  {id:"dino",   name:"Dino Runner",  icon:"🦕", desc:"Pule os obstáculos",          pts:"+8/obstáculo"},
+];
+
+// ── GAMES HUB ─────────────────────────────────────────────────
+function GamesHub({T,user,ranking,onScore}){
+  const [sel,setSel]=useState(null);
+  const [showAll,setShowAll]=useState(false);
+  const gameComp=sel?{
+    ttt:<TicTacToe T={T} onScore={p=>onScore(sel,p)} playerName={user.name}/>,
+    hang:<Hangman T={T} onScore={p=>onScore(sel,p)}/>,
+    snake:<Snake T={T} onScore={p=>onScore(sel,p)}/>,
+    memory:<MemoryGame T={T} onScore={p=>onScore(sel,p)}/>,
+    quiz:<SchoolQuiz T={T} onScore={p=>onScore(sel,p)}/>,
+    tet:<Tetris T={T} onScore={p=>onScore(sel,p)}/>,
+    dino:<Dino T={T} onScore={p=>onScore(sel,p)}/>,
+  }[sel]:null;
+  const topRanking=ranking.slice(0,5);
+  const myRank=ranking.findIndex(r=>r.name===user.name)+1;
+  const myEntry=ranking.find(r=>r.name===user.name);
+  const myBadge=getRankBadge(user.pts||0);
+  return(
+    <div className="fu" style={{paddingBottom:90}}>
+      <TopBar T={T} title="🎮 Arena de Jogos" sub="Compete com alunos do colégio"/>
+      {!sel&&<>
+        {/* My Rank Card */}
+        <div style={{background:`linear-gradient(135deg,${T.a}12,${T.b}08)`,border:`1px solid ${T.a}28`,borderRadius:16,padding:"14px",marginBottom:16,position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",right:-10,top:-10,fontSize:48,opacity:.08,transform:"rotate(12deg)"}}>🏆</div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div>
+              <div style={{fontSize:10,color:T.sub,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:4}}>Seu ranking</div>
+              <div style={{fontSize:22,fontWeight:900,color:T.a,marginBottom:2}}>{myRank>0?`#${myRank} de ${ranking.length}`:"Sem pontos ainda"}</div>
+              <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                <Badge T={T} icon={myBadge.icon} label={myBadge.label} color={myBadge.color}/>
+                <span style={{fontSize:11,color:T.sub}}>{user.pts||0} pts totais</span>
+              </div>
+            </div>
+            {myEntry&&<div style={{textAlign:"center"}}>
+              <div style={{fontSize:9,color:T.sub,marginBottom:3}}>Melhor jogo</div>
+              <div style={{fontSize:12,fontWeight:700,color:T.text}}>{myEntry.game}</div>
+              <div style={{fontSize:14,fontWeight:900,color:T.a}}>{myEntry.pts}pts</div>
+            </div>}
+          </div>
+        </div>
+
+        <SecTitle T={T}>🕹️ Escolha um jogo</SecTitle>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+          {GAME_LIST.map((g,i)=>(
+            <div key={g.id} className="card" onClick={()=>setSel(g.id)} style={{background:T.card,border:`1px solid ${T.a}14`,borderRadius:14,padding:"14px 12px",textAlign:"center",animation:`fadeUp .28s ${i*.06}s both`,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:0,right:0,background:`${T.a}08`,padding:"3px 7px",borderRadius:"0 14px 0 9px",fontSize:9,fontWeight:700,color:T.a}}>{g.pts}</div>
+              <div style={{fontSize:30,marginBottom:7,filter:`drop-shadow(0 0 10px ${T.a}30)`}}>{g.icon}</div>
+              <div style={{fontSize:12,fontWeight:800,color:T.text,marginBottom:3}}>{g.name}</div>
+              <div style={{fontSize:10,color:T.sub,lineHeight:1.4}}>{g.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        <SecTitle T={T}>🏆 Ranking do colégio</SecTitle>
+        <div style={{background:T.card,border:`1px solid ${T.a}14`,borderRadius:16,overflow:"hidden"}}>
+          {ranking.length===0&&<div style={{fontSize:12,color:T.sub,textAlign:"center",padding:"20px"}}>🎮 Jogue para aparecer no ranking!</div>}
+          {(showAll?ranking:topRanking).map((r,i)=>{
+            const badge=getRankBadge(r.pts);const isMe=r.name===user.name;
+            return(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderBottom:i<(showAll?ranking.length:topRanking.length)-1?`1px solid ${T.a}08`:undefined,background:isMe?`${T.a}06`:"transparent",animation:`rankSlide .3s ${i*.05}s both`}}>
+                <div style={{width:24,height:24,borderRadius:"50%",background:i===0?`${T.a}28`:i===1?`${T.b}18`:i===2?"rgba(205,127,50,.2)":"rgba(255,255,255,.04)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:i<3?14:10,fontWeight:800,color:i===0?T.a:i===1?T.b:i===2?"#CD7F32":T.sub,flexShrink:0}}>
+                  {i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1}
+                </div>
+                <AvatarBubble av={getAv(r.avatar||"a1")} size={32} T={T}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:700,color:isMe?T.a:T.text}}>{r.name}{isMe&&<span style={{fontSize:9,color:T.a,marginLeft:5}}>(você)</span>}</div>
+                  <div style={{fontSize:9,color:T.sub}}>{badge.icon} {badge.label} · {r.game}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:14,fontWeight:900,color:T.a}}>{r.pts}</div>
+                  <div style={{fontSize:8,color:T.sub}}>pts</div>
+                </div>
+              </div>
+            );
+          })}
+          {ranking.length>5&&<button onClick={()=>setShowAll(s=>!s)} style={{width:"100%",background:"none",border:"none",padding:"12px",color:T.a,fontSize:11,fontWeight:700,cursor:"pointer",borderTop:`1px solid ${T.a}08`}}>
+            {showAll?"Ver menos ↑":`Ver todos (${ranking.length}) ↓`}
+          </button>}
+        </div>
+      </>}
+      {sel&&<>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+          <button onClick={()=>setSel(null)} style={{background:`${T.a}12`,border:"none",borderRadius:10,color:T.text,fontSize:16,padding:"5px 12px",cursor:"pointer",fontWeight:700}}>←</button>
+          <div>
+            <div style={{fontSize:16,fontWeight:900}}>{GAME_LIST.find(g=>g.id===sel)?.icon} {GAME_LIST.find(g=>g.id===sel)?.name}</div>
+            <div style={{fontSize:10,color:T.sub}}>Pontos vão para o ranking do colégio</div>
+          </div>
+        </div>
+        <div style={{background:T.card,border:`1px solid ${T.a}14`,borderRadius:16,padding:"16px 14px"}}>
+          {gameComp}
+        </div>
+        <div style={{marginTop:12,background:T.surface,borderRadius:12,padding:"10px 14px",border:`1px solid ${T.a}10`}}>
+          <div style={{fontSize:10,color:T.sub,fontWeight:700,marginBottom:6}}>TOP 3 NESTE JOGO</div>
+          {ranking.filter(r=>r.game===GAME_LIST.find(g=>g.id===sel)?.name).slice(0,3).map((r,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"4px 0"}}>
+              <div style={{fontSize:11,color:T.text}}>{["🥇","🥈","🥉"][i]} {r.name}</div>
+              <div style={{fontSize:11,fontWeight:800,color:T.a}}>{r.pts}pts</div>
+            </div>
+          ))}
+          {ranking.filter(r=>r.game===GAME_LIST.find(g=>g.id===sel)?.name).length===0&&<div style={{fontSize:11,color:T.sub}}>Seja o primeiro a pontuar!</div>}
+        </div>
+      </>}
+    </div>
+  );
+}
+
+// ── HOME ──────────────────────────────────────────────────────
+const CHAT_BGS=[{id:"stars",l:"Estrelas"},{id:"aurora",l:"Aurora"},{id:"rain",l:"Chuva"},{id:"bubbles",l:"Bolhas"},{id:"plain",l:"Limpo"}];
+
+function ChatBG({id,T}){
+  const base={position:"absolute",inset:0,zIndex:0,overflow:"hidden",background:T.bg};
+  if(id==="stars")return(<div style={base}><style>{`@keyframes sf{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1.4)}}`}</style>{[...Array(28)].map((_,i)=><div key={i} style={{position:"absolute",width:i%5===0?3:1.5,height:i%5===0?3:1.5,borderRadius:"50%",background:i%3===0?T.a:T.b,top:`${5+i*3.2}%`,left:`${3+i*3.6}%`,animation:`sf ${2.5+i*.4}s ease-in-out infinite`,animationDelay:`${i*.3}s`,boxShadow:`0 0 ${i%5===0?8:3}px ${i%3===0?T.a:T.b}`}}/>)}</div>);
+  if(id==="aurora")return(<div style={base}>{[0,1,2].map(i=><div key={i} style={{position:"absolute",width:"180%",height:50+i*20,borderRadius:"50%",background:`linear-gradient(90deg,transparent,${T.a}${["16","10","08"][i]},transparent)`,top:`${15+i*25}%`,left:"-40%",filter:"blur(16px)",animation:`pulse ${5+i*2}s ease-in-out infinite`,animationDelay:`${i*.8}s`}}/>)}</div>);
+  if(id==="rain")return(<div style={base}><style>{`@keyframes rd{0%{transform:translateY(-20px);opacity:0}20%{opacity:.5}100%{transform:translateY(100vh);opacity:0}}`}</style>{[...Array(20)].map((_,i)=><div key={i} style={{position:"absolute",width:1,height:16+i%3*6,background:`linear-gradient(${T.a}80,transparent)`,left:`${i*5}%`,animation:`rd ${1+i*.08}s linear infinite`,animationDelay:`${i*.15}s`}}/>)}</div>);
+  if(id==="bubbles")return(<div style={base}><style>{`@keyframes bb{0%{transform:translateY(100%) scale(0);opacity:0}15%{opacity:.5}90%{opacity:.1}100%{transform:translateY(-50px) scale(1.5);opacity:0}}`}</style>{[...Array(14)].map((_,i)=><div key={i} style={{position:"absolute",width:10+i%5*6,height:10+i%5*6,borderRadius:"50%",border:`1px solid ${T.a}40`,left:`${5+i*7}%`,animation:`bb ${4+i*.5}s ease-in infinite`,animationDelay:`${i*.4}s`}}/>)}</div>);
+  return <div style={base}/>;
+}
+
+function HomeScr({T,user,onSelectContact,onMessage}){
+  const [search,setSearch]=useState("");
+  const [filter,setFilter]=useState("todos");
+  const allUsers=FAKE_USERS;
+  const sameSchool=allUsers.filter(u=>u.school===user.school);
+  const filtered=(filter==="todos"?allUsers:sameSchool).filter(u=>{
+    if(!search)return true;
+    return u.n.toLowerCase().includes(search.toLowerCase())||ALL_CLUBS.filter(c=>u.c.includes(c.id)).some(c=>c.n.toLowerCase().includes(search.toLowerCase()));
+  });
+  const sorted=[...filtered].sort((a,b)=>shared(b.c,user.clubs)-shared(a.c,user.clubs));
+  const hasClubs=user.clubs.length>0;
+  const av=getAv(user.avatar);
+  return(
+    <div className="fu" style={{paddingBottom:90}}>
+      <TopBar T={T} right={<div style={{display:"flex",alignItems:"center",gap:8}}>
+        <AvatarBubble av={av} size={32} T={T}/>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:11,fontWeight:700,color:T.text,lineHeight:1}}>{user.name}</div>
+          <div style={{fontSize:9,color:T.a,fontWeight:700}}>{user.pts||0} pts</div>
+        </div>
+      </div>}/>
+
+      {!hasClubs&&(
+        <div style={{background:`${T.a}10`,border:`1.5px solid ${T.a}28`,borderRadius:14,padding:"14px",marginBottom:16,animation:"scaleIn .35s both"}}>
+          <div style={{fontSize:16,marginBottom:6}}>🎯</div>
+          <div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:4}}>Escolha seus clubes!</div>
+          <div style={{fontSize:11,color:T.sub,lineHeight:1.5}}>Vá em Clubes e selecione seus interesses para encontrar alunos compatíveis.</div>
+        </div>
+      )}
+
+      <div style={{display:"flex",gap:8,marginBottom:14}}>
+        <input style={{...IS(T),marginBottom:0,flex:1,fontSize:12}} placeholder="🔍 Buscar aluno ou interesse…" value={search} onChange={e=>setSearch(e.target.value)}/>
+      </div>
+
+      <div style={{display:"flex",gap:6,marginBottom:16}}>
+        {[["todos","Todos"],["escola","Meu colégio"]].map(([v,l])=>(
+          <button key={v} onClick={()=>setFilter(v)} style={{flex:1,background:filter===v?`linear-gradient(135deg,${T.a},${T.b})`:T.surface,border:`1px solid ${filter===v?T.a:T.a+"18"}`,borderRadius:10,color:filter===v?"#fff":T.sub,fontSize:11,fontWeight:700,padding:"8px",cursor:"pointer",transition:"all .2s"}}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {sorted.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:T.sub,fontSize:12}}>Nenhum aluno encontrado 🤔</div>}
+      
+      {sorted.map((u,i)=>{
+        const com=shared(u.c,user.clubs);const av2=getAv(u.av);
+        const comClubs=ALL_CLUBS.filter(c=>u.c.includes(c.id)&&user.clubs.includes(c.id)).slice(0,3);
+        const isSchool=u.school===user.school;
+        return(
+          <div key={u.id} className="card" onClick={()=>onSelectContact(u)} style={{background:T.card,border:`1px solid ${com>0?T.a+"20":T.a+"0A"}`,borderRadius:15,padding:"13px",marginBottom:10,animation:`fadeUp .28s ${i*.05}s both`,display:"flex",alignItems:"flex-start",gap:12}}>
+            <div style={{position:"relative"}}>
+              <AvatarBubble av={av2} size={44} T={T}/>
+              {isSchool&&<div style={{position:"absolute",bottom:-2,right:-2,width:14,height:14,borderRadius:"50%",background:T.a,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8}}>🏫</div>}
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:2}}>
+                <div style={{fontSize:13,fontWeight:800,color:T.text}}>{u.n}</div>
+                {com>0&&<div style={{fontSize:10,fontWeight:700,color:T.a,background:`${T.a}14`,borderRadius:20,padding:"2px 8px"}}>{com} em comum</div>}
+              </div>
+              <div style={{fontSize:10,color:T.sub,marginBottom:com>0?6:0}}>{u.y} · {u.school}</div>
+              {comClubs.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:3}}>
+                {comClubs.map(c=><span key={c.id} style={{fontSize:9,background:`${T.a}10`,border:`1px solid ${T.a}18`,borderRadius:10,padding:"2px 6px",color:T.a,fontWeight:600}}>{c.i} {c.n}</span>)}
+              </div>}
+              {isSchool&&comClubs.length===0&&<div style={{fontSize:9,color:T.a,fontWeight:600}}>🏫 Mesmo colégio</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── CHAT ──────────────────────────────────────────────────────
+const EMJS=["😊","😂","🤩","👍","🎉","🔥","😎","🥳","💪","👀","🙌","✨","🎮","⚽","🎵","🎌","😅","🫶","🤝","💯","⚡","🌟","😁","🤔","👋","😌","🧠","🎯","🌸","💀"];
+
+function ChatScr({T,user,contact,msgs,step,onSend,onBack}){
+  const ref=useRef(null);const [bg,setBg]=useState("stars");const [showBg,setShowBg]=useState(false);const [showEmj,setShowEmj]=useState(false);const [emj,setEmj]=useState("");
+  useEffect(()=>{ref.current?.scrollIntoView({behavior:"smooth"});},[msgs]);
+  let opts=[];
+  if(step==="root")opts=MSG_TREE.map(m=>({id:m.id,t:m.t,next:m.r?.[0]?.id,meet:MEET_IDS.includes(m.id)}));
+  else{
+    const all=MSG_TREE.flatMap(n=>[n,...(n.r||[]),...((n.r||[]).flatMap(r=>r.r||[]))]);
+    const par=all.find(n=>n.r?.some(r=>r.id===step));
+    if(par){const rn=par.r.find(r=>r.id===step);if(rn?.r)opts=rn.r.map(r=>({id:r.id,t:r.t,next:null,meet:MEET_IDS.includes(r.id)}));}
+    if(!opts.length)opts=MSG_TREE.slice(0,4).map(m=>({id:m.id,t:m.t,next:m.r?.[0]?.id,meet:MEET_IDS.includes(m.id)}));
+  }
+  const av2=getAv(contact.av);
+  const comClubs=ALL_CLUBS.filter(c=>contact.c.includes(c.id)&&user.clubs.includes(c.id));
+  return(
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",paddingTop:12,position:"relative"}}>
+      <ChatBG id={bg} T={T}/>
+      <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"0 0 0"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,paddingBottom:10,borderBottom:`1px solid ${T.a}0E`,marginBottom:8,flexShrink:0}}>
+          <button onClick={onBack} style={{background:`${T.a}12`,border:"none",borderRadius:10,color:T.text,fontSize:16,padding:"5px 11px",cursor:"pointer",fontWeight:700}}>←</button>
+          <AvatarBubble av={av2} size={36} T={T}/>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:800,color:T.text}}>{contact.n}</div>
+            <div style={{fontSize:9,color:T.sub}}>{contact.y} · {contact.school}</div>
+          </div>
+          <button onClick={()=>setShowBg(s=>!s)} style={{background:`${T.a}0E`,border:"none",borderRadius:8,color:T.a,fontSize:9,fontWeight:700,padding:"4px 8px",cursor:"pointer"}}>🎨</button>
+        </div>
+
+        {showBg&&(
+          <div className="si" style={{background:T.surface,border:`1px solid ${T.a}10`,borderRadius:12,padding:"10px",marginBottom:8,flexShrink:0}}>
+            <div style={{fontSize:9,fontWeight:800,color:T.sub,textTransform:"uppercase",marginBottom:6}}>Fundo do chat</div>
+            <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+              {CHAT_BGS.map(b=><button key={b.id} onClick={()=>{setBg(b.id);setShowBg(false);}} style={{border:`2px solid ${bg===b.id?T.a:T.a+"18"}`,borderRadius:8,padding:"5px 10px",background:bg===b.id?`${T.a}14`:"transparent",color:bg===b.id?T.a:T.sub,fontSize:10,fontWeight:700,cursor:"pointer"}}>{b.l}</button>)}
+            </div>
+          </div>
+        )}
+
+        {comClubs.length>0&&(
+          <div style={{background:`${T.a}08`,border:`1px solid ${T.a}18`,borderRadius:10,padding:"8px 10px",marginBottom:8,flexShrink:0,display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+            <span style={{fontSize:9,color:T.sub,fontWeight:700}}>Em comum:</span>
+            {comClubs.slice(0,4).map(c=><span key={c.id} style={{fontSize:9,color:T.a,background:`${T.a}10`,borderRadius:8,padding:"2px 7px",fontWeight:600}}>{c.i} {c.n}</span>)}
+          </div>
+        )}
+
+        <div style={{background:`${T.b}08`,border:`1px solid ${T.b}14`,borderRadius:10,padding:"6px 10px",marginBottom:8,fontSize:9,color:T.text+"AA",flexShrink:0,display:"flex",gap:6,alignItems:"center"}}>
+          🛡️ <span>Mensagens seguras e pré-definidas · Encontro presencial no colégio</span>
+        </div>
+
+        <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:6,paddingBottom:8,position:"relative",zIndex:1}}>
+          {msgs.map((m,i)=>{
+            if(m.alert)return(
+              <div key={m.id||i} className="si" style={{margin:"4px auto",background:`${T.a}14`,border:`1.5px solid ${T.a}30`,borderRadius:18,padding:"8px 14px",fontSize:10,color:T.a,fontWeight:700,textAlign:"center",maxWidth:"85%"}}>
+                👋 Continue a conversa no colégio pessoalmente!
+              </div>
+            );
+            return(
+              <div key={m.id||i} style={{maxWidth:"78%",padding:"9px 12px",borderRadius:14,fontSize:12,lineHeight:1.55,alignSelf:m.mine?"flex-end":"flex-start",background:m.mine?`linear-gradient(135deg,${T.a},${T.b})`:`${T.card}EE`,border:m.mine?"none":`1px solid ${T.a}0E`,color:m.mine?"#fff":T.text,borderBottomRightRadius:m.mine?2:14,borderBottomLeftRadius:m.mine?14:2,animation:`msgPop .2s ${i*.02}s both`,boxShadow:m.mine?`0 2px 12px ${T.a}30`:"none"}}>
+                {m.text}
+              </div>
+            );
+          })}
+          <div ref={ref}/>
+        </div>
+
+        {showEmj&&(
+          <div className="si" style={{background:T.card,border:`1px solid ${T.a}10`,borderRadius:10,padding:"8px",marginBottom:6,flexShrink:0}}>
+            <div style={{display:"flex",flexWrap:"wrap",gap:3}}>
+              {EMJS.map(e=><button key={e} onClick={()=>{setEmj(e);setShowEmj(false);}} style={{fontSize:18,background:"none",border:"none",cursor:"pointer",padding:"2px",borderRadius:6,transition:"transform .1s"}}>{e}</button>)}
+            </div>
+          </div>
+        )}
+
+        <div style={{flexShrink:0}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+            <div style={{fontSize:9,fontWeight:800,color:T.sub,textTransform:"uppercase",letterSpacing:"0.5px"}}>Selecione uma mensagem</div>
+            <div style={{display:"flex",gap:4,alignItems:"center"}}>
+              {emj&&<span style={{fontSize:14,background:`${T.a}0E`,borderRadius:7,padding:"2px 6px"}}>{emj}</span>}
+              <button onClick={()=>setShowEmj(s=>!s)} style={{background:`${T.a}0E`,border:"none",borderRadius:7,color:T.a,fontSize:11,fontWeight:700,padding:"3px 7px",cursor:"pointer"}}>😊</button>
+            </div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:5,maxHeight:180,overflowY:"auto"}}>
+            {opts.map((o,i)=>(
+              <button key={o.id} onClick={()=>onSend(o.t+(emj?" "+emj:""),o.next,o.meet)} style={{background:T.card,border:`1.5px solid ${o.meet?T.a:T.a+"10"}`,borderLeft:o.meet?`3px solid ${T.a}`:`1.5px solid ${T.a+"10"}`,borderRadius:10,color:T.text,fontSize:11,fontWeight:500,padding:"8px 10px",cursor:"pointer",textAlign:"left",lineHeight:1.45,transition:"all .15s",animation:`slideR .18s ${i*.04}s both`}}>
+                {o.meet&&<span style={{color:T.a,fontWeight:800,marginRight:4}}>🤝</span>}{o.t}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CLUBS ─────────────────────────────────────────────────────
+function ClubsScr({T,user,onJoin}){
+  const [joined,setJoined]=useState(user.clubs);const [search,setSearch]=useState("");const [activeGroup,setActiveGroup]=useState(null);
+  const tog=id=>{const nx=joined.includes(id)?joined.filter(j=>j!==id):[...joined,id];setJoined(nx);onJoin(nx);};
+  const filtered=CLUB_GROUPS.map(g=>({...g,c:g.c.filter(c=>c.n.toLowerCase().includes(search.toLowerCase()))})).filter(g=>!search||g.c.length>0);
+  return(
+    <div className="fu" style={{paddingBottom:90}}>
+      <TopBar T={T} title="🎯 Clubes" right={<div style={{background:`${T.a}14`,borderRadius:20,padding:"4px 10px",fontSize:11,fontWeight:700,color:T.a}}>{joined.length} ativos</div>}/>
+      <input style={{...IS(T),marginBottom:10,fontSize:12}} placeholder="🔍 Buscar clube…" value={search} onChange={e=>setSearch(e.target.value)}/>
+      {joined.length>0&&!search&&(
+        <div style={{marginBottom:16}}>
+          <SecTitle T={T}>✅ Seus clubes ({joined.length})</SecTitle>
+          <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+            {ALL_CLUBS.filter(c=>joined.includes(c.id)).map(c=>(
+              <span key={c.id} onClick={()=>tog(c.id)} className="card" style={{background:`${T.a}14`,border:`1.5px solid ${T.a}28`,borderRadius:20,padding:"5px 10px",fontSize:10,color:T.a,fontWeight:700,cursor:"pointer",transition:"all .15s"}}>
+                {c.i} {c.n} ✕
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {filtered.map((g,gi)=>(
+        <div key={g.g} style={{marginBottom:14,animation:`fadeUp .25s ${gi*.04}s both`}}>
+          <div onClick={()=>setActiveGroup(activeGroup===g.g?null:g.g)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",background:T.card,border:`1px solid ${T.a}0E`,borderRadius:12,marginBottom:6,cursor:"pointer"}}>
+            <div style={{fontSize:11,fontWeight:800,color:T.text}}>{g.g}</div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              {g.c.filter(c=>joined.includes(c.id)).length>0&&<div style={{fontSize:9,color:T.a,fontWeight:700,background:`${T.a}14`,borderRadius:10,padding:"2px 6px"}}>{g.c.filter(c=>joined.includes(c.id)).length}</div>}
+              <div style={{color:T.sub,fontSize:12}}>{activeGroup===g.g?"▲":"▼"}</div>
+            </div>
+          </div>
+          {(activeGroup===g.g||search)&&(
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,animation:"fadeIn .2s both"}}>
+              {g.c.map(c=>{const act=joined.includes(c.id);return(
+                <div key={c.id} className="card" onClick={()=>tog(c.id)} style={{background:act?`${T.a}10`:T.card,border:`1.5px solid ${act?T.a:T.a+"10"}`,borderRadius:12,padding:"11px 10px",position:"relative",transition:"all .18s"}}>
+                  {act&&<div style={{position:"absolute",top:5,right:5,width:15,height:15,borderRadius:"50%",background:T.a,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,color:"#fff",fontWeight:800}}>✓</div>}
+                  <div style={{fontSize:20,marginBottom:4}}>{c.i}</div>
+                  <div style={{fontSize:11,fontWeight:700,color:T.text,lineHeight:1.2,marginBottom:2}}>{c.n}</div>
+                  <div style={{fontSize:9,color:act?T.a:T.sub,fontWeight:act?700:400}}>{act?"Membro ✓":"+ Entrar"}</div>
+                </div>
+              );})}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── PROFILE ───────────────────────────────────────────────────
+function ProfileScr({T,user,themes,fonts,tid,fid,onLogout,onTheme,onFont,onAvatar}){
+  const [tab,setTab]=useState("info");
+  const [avModal,setAvModal]=useState(false);
+  const av=getAv(user.avatar);
+  const badge=getRankBadge(user.pts||0);
+  const topGame=null;
+  return(
+    <div className="fu" style={{paddingBottom:90}}>
+      <TopBar T={T} title="👤 Perfil" right={<button onClick={onLogout} style={{background:`${T.a}0E`,border:"none",borderRadius:8,color:T.a,fontSize:11,fontWeight:700,padding:"5px 10px",cursor:"pointer"}}>Sair</button>}/>
+      
+      <div style={{background:`linear-gradient(135deg,${T.a}10,${T.b}06)`,border:`1px solid ${T.a}18`,borderRadius:18,padding:"18px",marginBottom:14,textAlign:"center"}}>
+        <div className="glow" onClick={()=>setAvModal(!avModal)} style={{width:76,height:76,borderRadius:"50%",background:av.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,margin:"0 auto 10px",cursor:"pointer"}}>
+          {av.e}
+        </div>
+        <div style={{fontSize:18,fontWeight:900,color:T.text,marginBottom:2}}>{user.name}</div>
+        <div style={{fontSize:11,color:T.sub,marginBottom:10}}>{user.year} · {user.school}</div>
+        <Badge T={T} icon={badge.icon} label={badge.label} color={badge.color}/>
+        <div style={{display:"flex",justifyContent:"center",gap:20,marginTop:12}}>
+          {[["Clubes",user.clubs.length],["Pontos",user.pts||0],["Posição","—"]].map(([l,v])=>(
+            <div key={l} style={{textAlign:"center"}}>
+              <div style={{fontSize:18,fontWeight:900,color:T.a,animation:"numberUp .4s both"}}>{v}</div>
+              <div style={{fontSize:9,color:T.sub,marginTop:1,textTransform:"uppercase",letterSpacing:"0.3px"}}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {avModal&&(
+        <div className="si" style={{background:T.card,border:`1px solid ${T.a}14`,borderRadius:14,padding:"12px",marginBottom:12}}>
+          <div style={{fontSize:10,fontWeight:800,color:T.sub,textTransform:"uppercase",marginBottom:8}}>Escolha seu avatar</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,maxHeight:220,overflowY:"auto"}}>
+            {AVATARS.map(a=>{const sel=user.avatar===a.id;return(
+              <div key={a.id} onClick={()=>{onAvatar(a.id);setAvModal(false);}} className="card" style={{textAlign:"center",padding:"6px 2px",borderRadius:10,border:`2px solid ${sel?T.a:T.a+"0A"}`,background:sel?`${T.a}14`:"transparent"}}>
+                <div style={{width:34,height:34,borderRadius:"50%",background:a.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,margin:"0 auto 3px",boxShadow:sel?`0 0 10px ${T.a}50`:"none"}}>{a.e}</div>
+                <div style={{fontSize:7,color:sel?T.a:T.sub,fontWeight:600}}>{a.l}</div>
+              </div>
+            );})}
+          </div>
+        </div>
+      )}
+
+      <div style={{display:"flex",gap:4,marginBottom:14}}>
+        {[["info","Perfil"],["look","Visual"],["clubs","Clubes"]].map(([id,label])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{flex:1,background:tab===id?`${T.a}14`:"transparent",border:`1.5px solid ${tab===id?T.a:T.a+"10"}`,borderRadius:10,color:tab===id?T.a:T.sub,fontSize:10,fontWeight:700,padding:"7px",cursor:"pointer",transition:"all .18s"}}>{label}</button>
+        ))}
+      </div>
+
+      {tab==="info"&&<div className="fi">
+        <div style={{background:T.card,border:`1px solid ${T.a}0C`,borderRadius:14,padding:"14px",marginBottom:12}}>
+          {[["📛 Nome",user.name],["🏫 Colégio",user.school],["📚 Série",user.year]].map(([k,v])=>(
+            <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${T.a}06`,fontSize:11}}>
+              <span style={{color:T.sub,fontWeight:600}}>{k}</span>
+              <span style={{color:T.text,fontWeight:700,maxWidth:"62%",textAlign:"right",fontSize:10}}>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{background:`${T.b}08`,border:`1px solid ${T.b}14`,borderRadius:12,padding:"12px",fontSize:11,color:T.text,lineHeight:1.7}}>
+          <strong>Sobre a Taikoform</strong><br/>
+          Plataforma de conexão entre alunos de Maringá, Paraná. Encontre pessoas com os mesmos interesses e construa amizades reais no colégio.<br/>
+          <span style={{color:T.sub,fontSize:9}}>Criado por Isaac · Liga Jovem Sebrae · 2025</span>
+        </div>
+      </div>}
+
+      {tab==="look"&&<div className="fi">
+        <SecTitle T={T}>Tema ({themes.length})</SecTitle>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:14}}>
+          {themes.map(t=>{const sel=tid===t.id;return(
+            <div key={t.id} className="card" onClick={()=>onTheme(t.id)} style={{background:t.bg,border:`2px solid ${sel?t.a:t.a+"18"}`,borderRadius:10,padding:"8px 6px",position:"relative"}}>
+              {sel&&<div style={{position:"absolute",top:3,right:3,width:11,height:11,borderRadius:"50%",background:t.a,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,color:"#fff",fontWeight:800}}>✓</div>}
+              <div style={{display:"flex",gap:3,marginBottom:3}}><div style={{width:8,height:8,borderRadius:"50%",background:t.a}}/><div style={{width:8,height:8,borderRadius:"50%",background:t.b}}/></div>
+              <div style={{fontSize:8,fontWeight:700,color:t.text,lineHeight:1.2}}>{t.name}</div>
+            </div>
+          );})}
+        </div>
+        <SecTitle T={T}>Fonte ({fonts.length})</SecTitle>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+          {fonts.map(ft=>{const sel=fid===ft.id;return(
+            <div key={ft.id} className="card" onClick={()=>onFont(ft.id)} style={{border:`2px solid ${sel?T.a:T.a+"0E"}`,borderRadius:10,padding:"9px",background:sel?`${T.a}0A`:T.card}}>
+              <div style={{fontFamily:ft.style,fontSize:14,fontWeight:700,color:T.text,marginBottom:2}}>{ft.p}</div>
+              <div style={{fontSize:9,color:sel?T.a:T.sub,fontFamily:ft.style,fontWeight:sel?700:400}}>{ft.name}</div>
+            </div>
+          );})}
+        </div>
+      </div>}
+
+      {tab==="clubs"&&<div className="fi">
+        <SecTitle T={T}>Meus clubes ({user.clubs.length})</SecTitle>
+        {user.clubs.length===0&&<div style={{fontSize:12,color:T.sub,textAlign:"center",padding:"20px 0"}}>Nenhum clube ativo. Vá em Clubes para escolher!</div>}
+        {CLUB_GROUPS.map(g=>{const mine=g.c.filter(c=>user.clubs.includes(c.id));if(!mine.length)return null;return(
+          <div key={g.g} style={{marginBottom:12}}>
+            <div style={{fontSize:10,fontWeight:800,color:T.a,marginBottom:6}}>{g.g}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+              {mine.map(c=><span key={c.id} style={{background:`${T.a}0A`,border:`1px solid ${T.a}18`,borderRadius:16,padding:"4px 10px",fontSize:10,color:T.a,fontWeight:600}}>{c.i} {c.n}</span>)}
+            </div>
+          </div>
+        );})}
+      </div>}
+
+      <div style={{textAlign:"center",fontSize:9,color:T.sub+"28",marginTop:16}}>Taikoform © 2025 · Isaac · Maringá PR</div>
+    </div>
+  );
+}
+
+// ── MAIN APP ──────────────────────────────────────────────────
+function App(){
+  const [splash,setSplash]=useState(true);
+  const [onboarded,setOnboarded]=useState(false);
+  const [user,setUser]=useState(null);
+  const [tab,setTab]=useState("home");
+  const [tid,setTid]=useState("aurora");
+  const [fid,setFid]=useState("system");
+  const [chat,setChat]=useState(null);
+  const [convos,setConvos]=useState({});
+  const [ranking,setRanking]=useState([
+    {name:"Ana Lima",pts:340,game:"Quiz Escola",avatar:"a1"},
+    {name:"Bruno Souza",pts:280,game:"Tetris",avatar:"a8"},
+    {name:"Diego Torres",pts:195,game:"Cobrinha",avatar:"a22"},
+    {name:"Isabela Cruz",pts:150,game:"Memória",avatar:"a20"},
+    {name:"João Pedro",pts:120,game:"Jogo da Velha",avatar:"a2"},
+    {name:"Elena Costa",pts:90,game:"Forca",avatar:"a7"},
+  ]);
+
+  const T=THEMES.find(t=>t.id===tid)||THEMES[0];
+  const F=FONTS.find(f=>f.id===fid)||FONTS[0];
+
+  const handleScore=(gameId,pts)=>{
+    if(!user||pts===0)return;
+    const gameName=GAME_LIST.find(g=>g.id===gameId)?.name||gameId;
+    setUser(u=>{
+      const newPts=(u.pts||0)+pts;
+      setRanking(r=>{
+        const idx=r.findIndex(x=>x.name===u.name);
+        const entry={name:u.name,pts:newPts,game:gameName,avatar:u.avatar||"a1"};
+        if(idx>=0){const nr=[...r];nr[idx]=entry;return nr.sort((a,b)=>b.pts-a.pts);}
+        return [...r,entry].sort((a,b)=>b.pts-a.pts);
+      });
+      return {...u,pts:newPts};
+    });
+  };
+
+  const handleSend=(text,next,isMeet)=>{
+    if(!chat)return;
+    const id=chat.id;
+    const myMsg={id:Date.now(),text,mine:true};
+    const botMsg={id:Date.now()+1,text:rnd(MSG_TREE.flatMap(m=>[m,...(m.r||[]),...((m.r||[]).flatMap(r=>r.r||[]))]).filter(m=>!m.r||!m.r.length).map(m=>m.t))||"Interessante! Me procura no colégio!",mine:false};
+    const alertMsg=isMeet?{id:Date.now()+2,alert:true}:null;
+    setConvos(c=>{const prev=c[id]||{msgs:[],step:"root"};const newMsgs=[...prev.msgs,myMsg];if(alertMsg)newMsgs.push(alertMsg);setTimeout(()=>{setConvos(cv=>{const p2=cv[id]||{msgs:[],step:"root"};return{...cv,[id]:{msgs:[...p2.msgs,botMsg],step:next||"root"}};});},600);return{...c,[id]:{msgs:newMsgs,step:next||"root"}};});
+  };
+
+  useEffect(()=>{
+    const style=document.createElement("style");style.textContent=mkCSS(T,F);style.id="taikoCSS";
+    const old=document.getElementById("taikoCSS");if(old)old.remove();
+    document.head.appendChild(style);return()=>style.remove();
+  },[tid,fid,T,F]);
+
+  if(splash)return <SplashScreen T={T} onDone={()=>setSplash(false)}/>;
+  if(!onboarded)return <OnboardingScr T={T} onDone={()=>setOnboarded(true)}/>;
+  if(!user)return <AuthScr T={T} onLogin={u=>setUser(u)}/>;
+
+  if(chat){
+    const convo=convos[chat.id]||{msgs:[],step:"root"};
+    return(
+      <div style={{maxWidth:480,margin:"0 auto",padding:"0 16px",minHeight:"100vh",position:"relative",zIndex:1}}>
+        <AnimBG T={T}/>
+        <ChatScr T={T} user={user} contact={chat} msgs={convo.msgs} step={convo.step} onSend={handleSend} onBack={()=>setChat(null)}/>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{maxWidth:480,margin:"0 auto",padding:"0 16px",minHeight:"100vh",position:"relative",zIndex:1}}>
+      <AnimBG T={T}/>
+      <div style={{position:"relative",zIndex:1}}>
+        {tab==="home"&&<HomeScr T={T} user={user} onSelectContact={c=>{setChat(c);if(!convos[c.id])setConvos(cv=>({...cv,[c.id]:{msgs:[{id:Date.now(),text:`Oi, ${user.name}! Vi que temos interesses em comum. 😊`,mine:false}],step:"root"}}))} } onMessage={()=>{}}/>}
+        {tab==="clubs"&&<ClubsScr T={T} user={user} onJoin={clubs=>setUser(u=>({...u,clubs}))}/>}
+        {tab==="games"&&<GamesHub T={T} user={user} ranking={ranking} onScore={handleScore}/>}
+        {tab==="profile"&&<ProfileScr T={T} user={user} themes={THEMES} fonts={FONTS} tid={tid} fid={fid} onLogout={()=>setUser(null)} onTheme={setTid} onFont={setFid} onAvatar={av=>setUser(u=>({...u,avatar:av}))}/>}
+      </div>
+      <BotNav T={T} tab={tab} setTab={setTab}/>
+    </div>
+  );
+}
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
